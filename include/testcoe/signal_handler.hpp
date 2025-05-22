@@ -11,4 +11,5 @@ namespace testcoe
 
     void signalHandler(int signal);
     void installSignalHandlers();
+    void setupStackTraceEnhancements();
 } // namespace testcoe

@@ -6,18 +6,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Enable debug symbols and stack trace info
 set(CMAKE_BUILD_TYPE Debug)
-add_compile_options(-fno-omit-frame-pointer)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(-fno-omit-frame-pointer)
+endif()
 
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 # Find testcoe package or fetch it from GitHub
-find_package(testcoe QUIET)
-if(NOT testcoe_FOUND)
-  include(FetchContent)
-  FetchContent_Declare(
-    testcoe
-    GIT_REPOSITORY https://github.com/nircoe/testcoe.git
-    GIT_TAG v0.1.0
-  )
-  FetchContent_MakeAvailable(testcoe)
+    find_package(testcoe QUIET)
+    if(NOT testcoe_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        testcoe
+        GIT_REPOSITORY https://github.com/nircoe/testcoe.git
+        GIT_TAG main # use v0.1.0 later on
+    )
+    FetchContent_MakeAvailable(testcoe)
+    endif()
 endif()
 
 # Note: You don't need to find or fetch GTest separately

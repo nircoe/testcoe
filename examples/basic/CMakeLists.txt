@@ -4,16 +4,18 @@ project(testcoe_basic_example LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 # Find testcoe package or fetch it from GitHub
-find_package(testcoe QUIET)
-if(NOT testcoe_FOUND)
-  include(FetchContent)
-  FetchContent_Declare(
-    testcoe
-    GIT_REPOSITORY https://github.com/nircoe/testcoe.git
-    GIT_TAG v0.1.0
-  )
-  FetchContent_MakeAvailable(testcoe)
+  find_package(testcoe QUIET)
+  if(NOT testcoe_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+      testcoe
+      GIT_REPOSITORY https://github.com/nircoe/testcoe.git
+      GIT_TAG main # use v0.1.0 later on
+    )
+    FetchContent_MakeAvailable(testcoe)
+  endif()
 endif()
 
 # Note: You don't need to find or fetch GTest separately

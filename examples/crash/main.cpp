@@ -22,6 +22,32 @@ int main(int argc, char **argv)
     testcoe::init(&argc, argv);
 
     // Run tests
+    if (argc > 1)
+    {
+        std::string arg = argv[1];
+
+        if (arg == "--run-segfault")
+        {
+            std::cout << "Running only the segmentation fault test..." << std::endl;
+            return testcoe::run_test("CrashTests", "SegmentationFault");
+        }
+        else if (arg == "--run-abort")
+        {
+            std::cout << "Running only the abort test..." << std::endl;
+            return testcoe::run_test("CrashTests", "Abort");
+        }
+        else if (arg == "--run-divbyzero")
+        {
+            std::cout << "Running only the divide by zero test..." << std::endl;
+            return testcoe::run_test("CrashTests", "DivideByZero");
+        }
+        else if (arg == "--run-crash-suite")
+        {
+            std::cout << "Running only the crash test suite..." << std::endl;
+            return testcoe::run_suite("CrashTests");
+        }
+    }
+
     return testcoe::run();
 
     // TODO: add specific test run, and why do they say "by default all crash tests are skipped"?? 

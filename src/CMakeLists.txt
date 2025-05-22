@@ -19,9 +19,9 @@ endif()
 
 target_link_libraries(testcoe
     PRIVATE
-        ${GTEST_TARGET}
         ${BACKWARD_TARGET}
     PUBLIC
+        ${GTEST_TARGET}
         testcoe_headers
 )
 
@@ -29,6 +29,11 @@ target_include_directories(testcoe
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+get_target_property(BACKWARD_INCLUDE_DIRS backward INTERFACE_INCLUDE_DIRECTORIES)
+if(BACKWARD_INCLUDE_DIRS)
+    target_include_directories(testcoe SYSTEM PRIVATE ${BACKWARD_INCLUDE_DIRS})
+endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(testcoe PRIVATE -Wall -Wextra -Werror)

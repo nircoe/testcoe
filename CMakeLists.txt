@@ -5,6 +5,18 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(MSVC)
+    # Ensure debug symbols are generated and linked
+    add_compile_options(/Zi)
+    add_link_options(/DEBUG)
+    # Keep debug info in release builds too for stack traces
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # Enhanced debug info for GCC/Clang
+    add_compile_options(-g3 -fno-omit-frame-pointer)
+endif()
+
 # googletest
 find_package(GTest QUIET)
 if(GTest_FOUND)
@@ -30,6 +42,11 @@ set(BACKWARD_HAS_UNWIND 0 CACHE BOOL "Disable libunwind support" FORCE)
 set(STACK_WALKING_UNWIND TRUE CACHE BOOL "Use unwind for stack walking" FORCE)
 set(STACK_DETAILS_AUTO_DETECT FALSE CACHE BOOL "Auto detect backward details" FORCE)
 set(STACK_DETAILS_BACKTRACE_SYMBOL TRUE CACHE BOOL "Use backtrace symbols" FORCE)
+
+# Windows-specific enhancements for better stack traces
+if(WIN32)
+    set(BACKWARD_HAS_DBGHELP 1 CACHE BOOL "Enable Windows DbgHelp for better stack traces" FORCE)
+endif()
 
 find_package(Backward QUIET)
 if(Backward_FOUND)

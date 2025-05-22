@@ -28,7 +28,7 @@ namespace testcoe
                   << color::yellow << "R" << color::reset << " - Running, "
                   << ". - Not run yet\n\n";
 
-        int maxNameLength;
+        std::size_t maxNameLength;
         if(!m_suiteTestStatus.empty())
         {
             maxNameLength = std::max_element(m_suiteTestStatus.begin(), m_suiteTestStatus.end(),
