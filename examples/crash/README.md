@@ -23,14 +23,14 @@ By default, all crash-causing tests are skipped to prevent unintentional crashes
 
 ```bash
 # Run the example with all tests (non-crashing)
-./crash_example
+./examples/crash/crash_example
 ```
 
 To run a specific crash test, use the Google Test filter mechanism:
 
 ```bash
 # Run only the segmentation fault test
-./crash_example --gtest_filter=CrashTest.SegmentationFault
+./examples/crash/crash_example --gtest_filter=CrashTests.SegmentationFault
 ```
 
 Or use the provided CMake targets:

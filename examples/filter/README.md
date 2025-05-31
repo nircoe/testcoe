@@ -21,22 +21,22 @@ cmake --build .
 
 ### Run all tests:
 ```bash
-./filtering_example --all
+./examples/filter/filter_example --all
 ```
 
 ### Run a specific test suite:
 ```bash
-./filtering_example --suite=MathSuite
+./examples/filter/filter_example --suite=MathSuite
 ```
 
 ### Run a specific test:
 ```bash
-./filtering_example --test=StringSuite.Length
+./examples/filter/filter_example --test=StringSuite.Length
 ```
 
 ### Show help message:
 ```bash
-./filtering_example --help
+./examples/filter/filter_example --help
 ```
 
 ## Test Suites Available
