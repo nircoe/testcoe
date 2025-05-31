@@ -1,0 +1,86 @@
+name: Windows
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    build-and-test:
+        name: ${{ matrix.name }}
+        runs-on: windows-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - name: "Windows MSVC"
+                      compiler: msvc
+                      cmake-generator: 'Visual Studio 17 2022'
+                      cmake-options: ''
+                    
+                    - name: "Windows MinGW"
+                      compiler: gcc
+                      cmake-generator: 'MinGW Makefiles'
+                      cmake-options: '-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++'
+
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+          with:
+            submodules: 'recursive'
+
+        - name: Install Windows build tools
+          if: matrix.compiler != 'msvc'
+          run: |
+            choco install mingw
+          shell: bash
+        
+        - name: Configure CMake
+          run: |
+            cmake -B build -G "${{ matrix.cmake-generator }}" ${{ matrix.cmake-options }}
+          shell: bash
+
+        - name: Build
+          run: |
+            cmake --build build --config Release
+          shell: bash
+
+        - name: Copy MinGW DLLs
+          if: matrix.compiler == 'gcc'
+          run: |
+            # Find GCC directory
+            GCC_DIR=$(dirname $(which gcc))
+            echo "GCC directory: $GCC_DIR"
+            
+            # Copy DLLs to test directory
+            echo "Copying DLLs to tests directory"
+            cp "$GCC_DIR"/libgcc*.dll build/tests/ 2>/dev/null || echo "No libgcc DLLs found"
+            cp "$GCC_DIR"/libstdc*.dll build/tests/ 2>/dev/null || echo "No libstdc DLLs found"
+            cp "$GCC_DIR"/libwinpthread*.dll build/tests/ 2>/dev/null || echo "No libwinpthread DLLs found"
+            
+            # Copy DLLs to example directories
+            echo "Copying DLLs to example directories"
+            for dir in build/examples/basic build/examples/filter build/examples/crash; do
+              echo "Copying to $dir"
+              cp "$GCC_DIR"/libgcc*.dll "$dir/" 2>/dev/null || echo "No libgcc DLLs found"
+              cp "$GCC_DIR"/libstdc*.dll "$dir/" 2>/dev/null || echo "No libstdc DLLs found"
+              cp "$GCC_DIR"/libwinpthread*.dll "$dir/" 2>/dev/null || echo "No libwinpthread DLLs found"
+            done
+            
+            # List files to verify
+            echo "Files in build/tests:"
+            ls -la build/tests/*.dll || echo "No DLLs in tests"
+            echo "Files in build/examples/basic:"
+            ls -la build/examples/basic/*.dll || echo "No DLLs in basic"
+          shell: bash
+        
+        - name: Run tests
+          working-directory: build
+          run: |
+            if [ "${{ matrix.compiler }}" == "gcc" ]; then
+                ./tests/testcoe_tests.exe
+            else
+                ./tests/Release/testcoe_tests.exe
+            fi 
+          shell: bash

@@ -25,6 +25,14 @@ target_link_libraries(testcoe
         testcoe_headers
 )
 
+if(WIN32)
+    target_link_libraries(testcoe PRIVATE
+        dbghelp
+        psapi
+        imagehlp
+    )
+endif()
+
 target_include_directories(testcoe
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}

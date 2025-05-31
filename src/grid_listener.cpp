@@ -1,6 +1,7 @@
 #include <testcoe/grid_listener.hpp>
 #include <testcoe/signal_handler.hpp>
 #include <testcoe/terminal_utils.hpp>
+#include <algorithm>
 
 namespace testcoe 
 {
@@ -65,6 +66,8 @@ namespace testcoe
                         break;
                     case TestStatus::Failed:
                         color = color::red;
+                        break;
+                    default:
                         break;
                 }
 
@@ -199,7 +202,7 @@ namespace testcoe
 
     void GridTestListener::OnTestIterationEnd(const testing::UnitTest &, int) { }
 
-    void GridTestListener::OnTestProgramEnd(const testing::UnitTest &unitTest)
+    void GridTestListener::OnTestProgramEnd(const testing::UnitTest &)
     {
         std::cout.rdbuf(m_originalCoutBuf);
         std::cerr.rdbuf(m_originalCerrBuf);
