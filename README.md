@@ -56,11 +56,11 @@ That's it! Run your tests and see the enhanced output.
 
 ## Features
 
-- 🎯 **Grid Visualization** - See all tests progress in real-time
-- 🛡️ **Crash Handling** - Get stack traces when tests crash
-- 🎨 **Color Support** - Automatic terminal detection
-- 🔍 **Test Filtering** - Run specific tests or suites
-- 📦 **Zero Config** - Works out of the box with Google Test
+- **Grid Visualization** - See all tests progress in real-time
+- **Crash Handling** - Get stack traces when tests crash
+- **Color Support** - Automatic terminal detection
+- **Test Filtering** - Run specific tests or suites
+- **Zero Config** - Works out of the box with Google Test
 
 ## Examples
 
