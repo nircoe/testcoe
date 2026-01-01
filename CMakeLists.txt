@@ -5,6 +5,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# TODO: Remove this when upgrading to a newer version of backward-cpp (newer than v1.6)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.14 CACHE STRING "" FORCE)
+
 if(MSVC)
     # Ensure debug symbols are generated and linked
     add_compile_options(/Zi)

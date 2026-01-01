@@ -7,22 +7,22 @@ testcoe enhances Google Test by intercepting test events and providing visual fe
 ## Component Architecture
 
 ```
-┌─────────────────────────────────────┐
-│         Test Application            │
-│        (Your Google Tests)          │
-└───────────────┬─────────────────────┘
-                │
-┌───────────────▼─────────────────────┐
-│            testcoe                  │
-│    (Main Interface & API)           │
-└───────────────┬─────────────────────┘
-                │
-        ┌───────┴────────┬─────────────┐
-        │                │             │
-┌───────▼────────┐ ┌─────▼──────┐ ┌───▼──────────┐
-│ GridListener   │ │SignalHandler│ │TerminalUtils│
-│ (Visual Grid)  │ │  (Crashes)  │ │  (Terminal)  │
-└────────────────┘ └────────────┘ └──────────────┘
+                                          ┌─────────────────────────────────────┐
+                                          │          Test Application           │
+                                          │         (Your Google Tests)         │
+                                          └──────────────────┬──────────────────┘
+                                                             │
+                                          ┌──────────────────▼──────────────────┐
+                                          │               testcoe               │
+                                          │       (Main Interface & API)        │
+                                          └──────────────────┬──────────────────┘
+                                                             │
+                                          ┌──────────────────│──────────────────┐
+                                          │                  │                  │
+                                  ┌───────▼───────┐   ┌──────▼──────┐    ┌──────▼──────┐
+                                  │ GridListener  │   │SignalHandler│    │TerminalUtils│
+                                  │ (Visual Grid) │   │  (Crashes)  │    │  (Terminal) │
+                                  └───────────────┘   └─────────────┘    └─────────────┘
 ```
 
 ## Core Components
@@ -90,7 +90,7 @@ testcoe enhances Google Test by intercepting test events and providing visual fe
 - [**backward-cpp**](https://github.com/bombela/backward-cpp) (v1.6) - Stack trace generation
 
 ### Platform Dependencies
-- **Windows**: DbgHelp.dll (for symbol resolution)
+- **Windows**: dbghelp, psapi and imagehlp
 - **Unix/Linux**: Standard POSIX signal handling
 - **macOS**: Standard POSIX signal handling
 

@@ -17,21 +17,11 @@
 - ⏳ Customizable grid layout and colors
 - ⏳ JSON/XML test report generation
 - ⏳ Test execution time tracking and reporting
-- ⏳ Parallel test execution visualization
-- ⏳ Interactive test selection mode
-- ⏳ Test history and trend analysis
-- ⏳ Integration with popular IDEs
-- ⏳ Support for Google Test's sharding feature
-- ⏳ Custom test status indicators
-- ⏳ Test dependency visualization
-- ⏳ Performance profiling integration
-- ⏳ Remote test execution monitoring
-- ⏳ Test coverage visualization
-- ⏳ Support for other test frameworks
 
 ## Feature Requests
 
 Have an idea for testcoe? Please open an issue on GitHub with the "enhancement" label.
+And of course, feel free to reach out at nircoe@gmail.com
 
 ## Versioning
 
