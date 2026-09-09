@@ -10,10 +10,10 @@ set(CMAKE_POLICY_VERSION_MINIMUM 3.14 CACHE STRING "" FORCE)
 
 if(MSVC)
     # Ensure debug symbols are generated and linked
-    add_compile_options(/Zi)
+    add_compile_options(/Z7)
     add_link_options(/DEBUG)
     # Keep debug info in release builds too for stack traces
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Z7")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Enhanced debug info for GCC/Clang

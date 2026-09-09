@@ -16,7 +16,7 @@ jobs:
                 include:
                     - name: "Windows MSVC"
                       compiler: msvc
-                      cmake-generator: 'Visual Studio 17 2022'
+                      cmake-generator: ''
                       cmake-options: ''
                     
                     - name: "Windows MinGW"
@@ -38,7 +38,12 @@ jobs:
         
         - name: Configure CMake
           run: |
-            cmake -B build -G "${{ matrix.cmake-generator }}" ${{ matrix.cmake-options }} -DTESTCOE_BUILD_EXAMPLES=ON -DTESTCOE_BUILD_TESTS=ON
+            if [ -n "${{ matrix.cmake-generator }}" ]; then
+              cmake -B build -G "${{ matrix.cmake-generator }}" ${{ matrix.cmake-options }} -DTESTCOE_BUILD_EXAMPLES=ON -DTESTCOE_BUILD_TESTS=ON
+            else
+              cmake -B build ${{ matrix.cmake-options }} -DTESTCOE_BUILD_EXAMPLES=ON -DTESTCOE_BUILD_TESTS=ON
+            fi
+            
           shell: bash
 
         - name: Build
