@@ -46,6 +46,11 @@ int main(int argc, char **argv)
             std::cout << "Running only the crash test suite..." << std::endl;
             return testcoe::run_suite("CrashTests");
         }
+        else if (arg == "--run-death-test")
+        {
+            std::cout << "Running only the EXPECT_DEATH regression test..." << std::endl;
+            return testcoe::run_test("CrashTests", "AbortDeathTest");
+        }
     }
 
     return testcoe::run();

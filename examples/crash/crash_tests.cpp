@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <cstdlib>
 
 class CrashTests : public ::testing::Test
 {
@@ -65,6 +66,17 @@ TEST(CrashTests, Abort)
 
     // We should never reach this point
     FAIL() << "Test did not crash as expected";
+}
+
+//==============================================================================
+// Death Test (regression test for testcoe/gtest death-test signal handler collision)
+//==============================================================================
+
+// Must pass cleanly, unlike the other tests here - gtest's EXPECT_DEATH handles the abort,
+// testcoe must stay out of its way. Never skipped.
+TEST(CrashTests, AbortDeathTest)
+{
+    EXPECT_DEATH(std::abort(), "");
 }
 
 //==============================================================================
