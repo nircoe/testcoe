@@ -28,7 +28,7 @@ class ExampleTests : public ::testing::Test
 {
 protected:
     // Helper function to run a command and capture its output (cross-platform)
-    std::string runCommand(const std::string &command)
+    std::string runCommand(const std::string &command, int *exitCodeOut = nullptr)
     {
         std::string result;
         std::string fullCommand = command;
@@ -65,8 +65,8 @@ protected:
         }
 #endif
 
-        // Store exit code for debugging if needed
-        (void)exitCode;
+        if (exitCodeOut)
+            *exitCodeOut = exitCode;
 
         return result;
     }
@@ -271,6 +271,25 @@ TEST_F(ExampleTests, CrashExampleRuns)
 
     EXPECT_TRUE(hasSkipMessage)
         << "Crash tests should be skipped by default. Output: " << output;
+}
+
+// EXPECT_DEATH must pass cleanly under testcoe's handlers (see signal_handler.cpp's internal_run_death_test guard)
+TEST_F(ExampleTests, CrashExampleDeathTestPassesCleanly)
+{
+    std::string executable = getExecutablePath("crash");
+    ASSERT_TRUE(executableExists(executable)) << "Crash example executable not found: " << executable;
+
+    int exitCode = -1;
+    std::string output = runCommand(executable + " --run-death-test", &exitCode);
+
+    EXPECT_EQ(exitCode, 0)
+        << "EXPECT_DEATH regression test should exit 0 (gtest reports it as passed). Output: " << output;
+
+    EXPECT_TRUE(output.find("TEST TERMINATED BY") == std::string::npos)
+        << "testcoe's own crash handler must not fire for a passing EXPECT_DEATH test. Output: " << output;
+
+    EXPECT_TRUE(output.find("ALL TESTS PASSED") != std::string::npos)
+        << "Death test run should report success via testcoe's own summary. Output: " << output;
 }
 
 // Test that crash example actually handles crashes (this test is risky!)

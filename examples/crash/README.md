@@ -48,6 +48,19 @@ cmake --build . --target run_crash_example_DivideByZero
 - `StackOverflow` - Demonstrates handling of stack overflow
 - `OutOfBounds` - Demonstrates handling of out-of-bounds access
 - `StreamRedirection` - Demonstrates handling of crashes with redirected streams
+- `AbortDeathTest` - Regression test for gtest's `EXPECT_DEATH` under testcoe (always runs, never skipped)
+
+## Death Test Regression Check
+
+Unlike the crash tests above, `AbortDeathTest` doesn't crash the whole binary. It uses gtest's
+`EXPECT_DEATH` to assert a child process aborts as expected, and must pass cleanly:
+
+```bash
+./examples/crash/crash_example --run-death-test
+```
+
+Guards against a signal-handler/death-test collision on Windows: testcoe must not intercept the
+child's abort before gtest's own death-test protocol can observe it.
 
 ## Enabling a Crash Test
 

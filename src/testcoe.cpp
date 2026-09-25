@@ -5,15 +5,27 @@ namespace testcoe
 {
     static bool s_initialized = false;
 
+    static void init_helper()
+    {
+        if (!testing::GTEST_FLAG(internal_run_death_test).empty())
+        {
+            s_initialized = true;
+            return;
+        }
+
+        installGridListener();
+        installSignalHandlers();
+
+        s_initialized = true;
+    }
+
     void init()
     {
         if(s_initialized) return;
 
         ::testing::InitGoogleTest();
-        installGridListener();
-        installSignalHandlers();
 
-        s_initialized = true;
+        init_helper();
     }
 
     void init(int *argc, char **argv)
@@ -24,10 +36,8 @@ namespace testcoe
             throw std::invalid_argument("Invalid arguments passed to testcoe::init");
 
         ::testing::InitGoogleTest(argc, argv);
-        installGridListener();
-        installSignalHandlers();
 
-        s_initialized = true;
+        init_helper();
     }
 
     bool isInitialized()

@@ -4,20 +4,22 @@ on:
     push:
         branches: [main]
     pull_request:
+        types: [opened, synchronize, reopened, ready_for_review]
         branches: [main]
 
 jobs:
     build-and-test:
         name: ${{ matrix.name }}
         runs-on: windows-latest
+        if: github.event.pull_request.draft == false || github.event_name == 'push'
         strategy:
             fail-fast: false
             matrix:
                 include:
                     - name: "Windows MSVC"
                       compiler: msvc
-                      cmake-generator: ''
-                      cmake-options: ''
+                      cmake-generator: 'Ninja'
+                      cmake-options: '-DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release'
                     
                     - name: "Windows MinGW"
                       compiler: gcc
@@ -35,14 +37,14 @@ jobs:
           run: |
             choco install mingw
           shell: bash
-        
+
+        - name: Setup MSVC dev environment
+          if: matrix.compiler == 'msvc'
+          uses: ilammy/msvc-dev-cmd@v1.13.0
+
         - name: Configure CMake
           run: |
-            if [ -n "${{ matrix.cmake-generator }}" ]; then
-              cmake -B build -G "${{ matrix.cmake-generator }}" ${{ matrix.cmake-options }} -DTESTCOE_BUILD_EXAMPLES=ON -DTESTCOE_BUILD_TESTS=ON
-            else
-              cmake -B build ${{ matrix.cmake-options }} -DTESTCOE_BUILD_EXAMPLES=ON -DTESTCOE_BUILD_TESTS=ON
-            fi
+            cmake -B build -G "${{ matrix.cmake-generator }}" ${{ matrix.cmake-options }} -DTESTCOE_BUILD_EXAMPLES=ON -DTESTCOE_BUILD_TESTS=ON
             
           shell: bash
 
@@ -54,9 +56,5 @@ jobs:
         - name: Run tests
           working-directory: build
           run: |
-            if [ "${{ matrix.compiler }}" == "gcc" ]; then
-                ./tests/testcoe_tests.exe
-            else
-                ./tests/Release/testcoe_tests.exe
-            fi 
+            ./tests/testcoe_tests.exe
           shell: bash
