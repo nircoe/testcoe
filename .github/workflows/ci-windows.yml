@@ -19,7 +19,7 @@ jobs:
                     - name: "Windows MSVC"
                       compiler: msvc
                       cmake-generator: 'Ninja'
-                      cmake-options: '-DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl'
+                      cmake-options: '-DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release'
                     
                     - name: "Windows MinGW"
                       compiler: gcc

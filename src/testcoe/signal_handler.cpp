@@ -169,11 +169,6 @@ namespace testcoe
 
     void installSignalHandlers()
     {
-        // In gtest's Windows death-test re-exec child, our handlers would intercept the
-        // abort before gtest's own status pipe write, breaking EXPECT_DEATH reporting.
-        if (!testing::GTEST_FLAG(internal_run_death_test).empty())
-            return;
-
         std::cout << "Installing signal handlers..." << std::endl;
 
         testing::GTEST_FLAG(catch_exceptions) = false;

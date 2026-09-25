@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     std::cout << "  - Provide helpful debugging information" << std::endl;
     std::cout << std::endl;
     std::cout << "IMPORTANT: By default, all crash tests are skipped." << std::endl;
-    std::cout << "To run a specific crash test, use: --gtest_filter=CrashTest.Name" << std::endl;
+    std::cout << "To run a specific crash test, use: --gtest_filter=CrashTests.Name" << std::endl;
     std::cout << std::endl;
 
     // Initialize testcoe
