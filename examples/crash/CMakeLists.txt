@@ -4,8 +4,6 @@ project(testcoe_crash_handling_example LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Enable debug symbols and stack trace info
-set(CMAKE_BUILD_TYPE Debug)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_compile_options(-fno-omit-frame-pointer)
 endif()
