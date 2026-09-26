@@ -215,6 +215,41 @@ TEST_F(ExampleTests, BasicExampleRuns)
         << "Missing test summary in output";
 }
 
+// runCommand() pipes output through popen/_popen, which is never a TTY, so this covers
+// the non-interactive path (see terminal::isInteractive()).
+TEST_F(ExampleTests, BasicExampleNonInteractiveOutputHasNoDuplicateGridFrames)
+{
+    std::string executable = getExecutablePath("basic");
+    ASSERT_TRUE(executableExists(executable)) << "Basic example executable not found: " << executable;
+
+    std::string output = runCommand(executable);
+
+    // Sits between printGrid()'s two dynamic counts, so it's never split by ANSI color codes.
+    const std::string gridFrameMarker = " tests... Completed: ";
+
+    std::size_t frameCount = 0;
+    std::size_t pos = 0;
+    while ((pos = output.find(gridFrameMarker, pos)) != std::string::npos)
+    {
+        ++frameCount;
+        pos += gridFrameMarker.length();
+    }
+
+    EXPECT_EQ(frameCount, 1u)
+        << "Non-interactive output should contain exactly one grid frame (the final summary), "
+        << "not one per test start/end event. Output:\n" << output;
+
+    // Loose bound - a duplicate-frame regression would blow well past this.
+    std::size_t lineCount = 0;
+    for (char c : output)
+        if (c == '\n')
+            ++lineCount;
+
+    EXPECT_LT(lineCount, 60u)
+        << "Non-interactive output is unexpectedly long (" << lineCount << " lines) - possible "
+        << "duplicate-frame regression. Output:\n" << output;
+}
+
 // Test that filter example runs with different options
 TEST_F(ExampleTests, FilterExampleRuns)
 {

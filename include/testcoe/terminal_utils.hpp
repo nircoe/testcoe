@@ -12,5 +12,6 @@ namespace testcoe
     {
         void clear();
         bool isAnsiEnabled();
+        bool isInteractive();
     } // namespace terminal
 } // namespace testcoe
