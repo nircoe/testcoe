@@ -40,6 +40,7 @@ namespace testcoe
     class GridTestListener : public testing::TestEventListener
     {
         testing::TestEventListener* m_originalListener;
+        bool m_interactive; // true only on a real TTY, gates per-event grid redraws
 
         std::map<std::string, std::vector<TestStatus>> m_suiteTestStatus;
         std::map<std::string, std::vector<std::string>> m_suiteTestNames;
