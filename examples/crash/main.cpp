@@ -53,7 +53,7 @@ int main(int argc, char **argv)
         }
     }
 
-    return testcoe::run();
+    return testcoe::run("-CrashTests.*");
 
     // TODO: add specific test run, and why do they say "by default all crash tests are skipped"?? 
     // you don't really do anything with the --gtest_filter flag, and we should call it "--run-test"

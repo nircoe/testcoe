@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <memory>
 #include <cstdlib>
 
 class CrashTests : public ::testing::Test
@@ -19,7 +18,7 @@ TEST(CrashTests, SegmentationFault)
     std::cout << "This test will cause a segmentation fault by dereferencing a null pointer." << std::endl;
 
     // Skip by default - uncomment the next line and comment the GTEST_SKIP to run
-    GTEST_SKIP() << "Skipping intentional crash test";
+    // GTEST_SKIP() << "Skipping intentional crash test";
 
     // This will cause a segmentation fault
     int *nullPtr = nullptr;
@@ -39,7 +38,7 @@ TEST(CrashTests, DivideByZero)
     std::cout << "This test will cause a floating point exception by dividing by zero." << std::endl;
 
     // Skip by default - uncomment the next line and comment the GTEST_SKIP to run
-    GTEST_SKIP() << "Skipping intentional crash test";
+    // GTEST_SKIP() << "Skipping intentional crash test";
 
     // This will cause a floating point exception
     volatile int zero = 0;
@@ -59,7 +58,7 @@ TEST(CrashTests, Abort)
     std::cout << "This test will cause a program abort." << std::endl;
 
     // Skip by default - uncomment the next line and comment the GTEST_SKIP to run
-    GTEST_SKIP() << "Skipping intentional crash test";
+    // GTEST_SKIP() << "Skipping intentional crash test";
 
     // This will abort the program
     std::abort();
