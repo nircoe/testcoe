@@ -71,7 +71,7 @@ See the [examples/](examples/) directory for demonstrations:
 
 ## Requirements
 
-- C++17 or later
+- C++23 or later
 - CMake 3.14+
 - Google Test (automatically included)
 

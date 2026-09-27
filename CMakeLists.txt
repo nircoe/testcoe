@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.14)
 project(testcoe VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # TODO: Remove this when upgrading to a newer version of backward-cpp (newer than v1.6)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.14 CACHE STRING "" FORCE)

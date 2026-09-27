@@ -6,7 +6,7 @@ Thank you for your interest in contributing to testcoe!
 
 ### Prerequisites
 - CMake 3.14+
-- C++17 compatible compiler
+- C++23 compatible compiler
 - Git
 
 ### Building from Source
