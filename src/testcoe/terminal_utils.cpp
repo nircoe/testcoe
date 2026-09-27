@@ -1,5 +1,12 @@
 #include <testcoe/terminal_utils.hpp>
 
+#ifdef _WIN32
+    #include <io.h>
+#else
+    #include <unistd.h>
+#endif
+#include <cstdio>
+
 namespace testcoe
 {
     namespace terminal
@@ -65,6 +72,17 @@ namespace testcoe
             // \033[H moves cursor to top-left corner
             // \033[J clears the screen from cursor to end
             std::cout << "\033[H\033[J";
+        }
+
+        // Distinct from isAnsiEnabled(): TTY-ness, not ANSI capability. A pipe is never
+        // interactive regardless of color support.
+        bool isInteractive()
+        {
+#ifdef _WIN32
+            return _isatty(_fileno(stdout)) != 0;
+#else
+            return isatty(STDOUT_FILENO) != 0;
+#endif
         }
     } // namespace terminal
 } // namespace testcoe

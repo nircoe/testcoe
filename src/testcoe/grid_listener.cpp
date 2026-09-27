@@ -79,7 +79,7 @@ namespace testcoe
     }
 
     GridTestListener::GridTestListener(testing::TestEventListener *listener) :
-        m_originalListener(listener),
+        m_originalListener(listener), m_interactive(terminal::isInteractive()),
         m_totalTests(0), m_completedTests(0), m_passedTests(0), m_failedTests(0),
         m_originalCoutBuf(std::cout.rdbuf()), m_originalCerrBuf(std::cerr.rdbuf())
     {
@@ -122,7 +122,8 @@ namespace testcoe
         std::cout << color::bold << "Running " << m_totalTests << " tests..." << std::endl
                   << color::reset;
 
-        printGrid();
+        if (m_interactive)
+            printGrid();
 
         std::cout.rdbuf(m_nullStream.rdbuf());
         std::cerr.rdbuf(m_nullStream.rdbuf());
@@ -160,9 +161,12 @@ namespace testcoe
         if(0 <= testIndex && testIndex < static_cast<int>(m_suiteTestStatus[m_currentTestSuite].size()))
             m_suiteTestStatus[m_currentTestSuite][testIndex] = TestStatus::Running;
 
-        std::cout.rdbuf(m_originalCoutBuf);
-        printGrid();
-        std::cout.rdbuf(m_nullStream.rdbuf());
+        if (m_interactive)
+        {
+            std::cout.rdbuf(m_originalCoutBuf);
+            printGrid();
+            std::cout.rdbuf(m_nullStream.rdbuf());
+        }
     }
 
     void GridTestListener::OnTestPartResult(const testing::TestPartResult &testPartResult)
@@ -189,9 +193,12 @@ namespace testcoe
 
         ++m_completedTests;
 
-        std::cout.rdbuf(m_originalCoutBuf);
-        printGrid();
-        std::cout.rdbuf(m_nullStream.rdbuf());
+        if (m_interactive)
+        {
+            std::cout.rdbuf(m_originalCoutBuf);
+            printGrid();
+            std::cout.rdbuf(m_nullStream.rdbuf());
+        }
     }
 
     void GridTestListener::OnTestSuiteEnd(const testing::TestSuite &) { }

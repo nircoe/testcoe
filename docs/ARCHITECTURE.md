@@ -41,7 +41,7 @@ testcoe enhances Google Test by intercepting test events and providing visual fe
 - **Purpose**: Implements Google Test event listener for visual grid display
 - **Key Features**:
   - Tracks test execution state
-  - Updates terminal display in real-time
+  - Updates terminal display in real-time on interactive terminals; when output is piped or redirected (e.g. CI logs), redraws only once, in the final summary, to avoid duplicate frames
   - Collects and displays failure information
   - Shows execution time statistics
 
@@ -59,6 +59,7 @@ testcoe enhances Google Test by intercepting test events and providing visual fe
 - **Key Functions**:
   - `isAnsiEnabled()` - Detects ANSI color support
   - `clear()` - Clears terminal screen
+  - `isInteractive()` - Detects whether stdout is an interactive terminal (TTY) vs piped/redirected
 
 ## Data Flow
 
@@ -73,8 +74,8 @@ testcoe enhances Google Test by intercepting test events and providing visual fe
    - Google Test begins execution
    - GridListener receives events:
      - `OnTestProgramStart` - Initialize grid display
-     - `OnTestStart` - Mark test as running
-     - `OnTestEnd` - Mark test as passed/failed
+     - `OnTestStart` - Mark test as running (redraws the grid only when output is interactive)
+     - `OnTestEnd` - Mark test as passed/failed (redraws the grid only when output is interactive)
      - `OnTestProgramEnd` - Show final summary
 
 3. **Crash Handling**:

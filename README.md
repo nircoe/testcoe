@@ -56,7 +56,7 @@ That's it! Run your tests and see the enhanced output.
 
 ## Features
 
-- **Grid Visualization** - See all tests progress in real-time
+- **Grid Visualization** - Real-time progress on interactive terminals; a single, duplication-free summary when output is piped or redirected (e.g. CI logs)
 - **Crash Handling** - Get stack traces when tests crash
 - **Color Support** - Automatic terminal detection
 - **Test Filtering** - Run specific tests or suites
