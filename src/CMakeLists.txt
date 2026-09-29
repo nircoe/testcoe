@@ -20,6 +20,7 @@ endif()
 target_link_libraries(testcoe
     PRIVATE
         ${BACKWARD_TARGET}
+        ${TESTCOE_STACKTRACE_LIBS}
     PUBLIC
         ${GTEST_TARGET}
         testcoe_headers
@@ -36,6 +37,7 @@ endif()
 target_include_directories(testcoe
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${TESTCOE_CONFIG_DIR}
 )
 
 get_target_property(BACKWARD_INCLUDE_DIRS backward INTERFACE_INCLUDE_DIRECTORIES)

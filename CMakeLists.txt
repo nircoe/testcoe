@@ -22,6 +22,8 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "C
 endif()
 
 include(cmake/utils.cmake)
+include(cmake/stacktrace.cmake)
+include(cmake/config_header.cmake)
 
 # googletest
 find_package(GTest QUIET)
@@ -71,6 +73,9 @@ else()
     FetchContent_MakeAvailable(backward)
     ignore_external_warnings(backward)
 endif()
+
+testcoe_detect_stacktrace()
+generate_testcoe_config_header()
 
 # testcoe
 add_subdirectory(include)
