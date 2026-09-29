@@ -18,6 +18,8 @@ endif()
 # Make sure examples are built before running tests
 add_dependencies(testcoe_tests basic_example crash_example filter_example)
 
+target_compile_definitions(testcoe_tests PRIVATE TESTCOE_TEST_EXPECT_SOURCE_LOCATIONS=$<IF:$<STREQUAL:${TESTCOE_STACKTRACE_BACKEND},std>,1,0>)
+
 # Compiler flags
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(testcoe_tests PRIVATE -Wall -Wextra -Werror)
@@ -33,10 +35,10 @@ add_custom_target(run_tests
     COMMENT "Running testcoe example integration tests"
 )
 
-# Target to run tests including disabled crash tests (for manual testing)
+# Target to run tests, including any tests disabled for reasons other than crashing
 add_custom_target(run_all_tests
     COMMAND testcoe_tests --gtest_also_run_disabled_tests
     DEPENDS testcoe_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Running ALL testcoe tests including crash tests"
+    COMMENT "Running ALL testcoe tests, including any DISABLED_ ones"
 )

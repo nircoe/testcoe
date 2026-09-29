@@ -325,26 +325,32 @@ TEST_F(ExampleTests, CrashExampleDeathTestPassesCleanly)
         << "Death test run should report success via testcoe's own summary. Output: " << output;
 }
 
-// Test that crash example actually handles crashes (this test is risky!)
-TEST_F(ExampleTests, DISABLED_CrashExampleHandlesCrashes)
+// Test that crash example actually handles crashes and produces a usable stack trace
+TEST_F(ExampleTests, CrashExampleHandlesCrashes)
 {
-    // This test is disabled by default because it intentionally crashes
-    // Enable it by running: --gtest_also_run_disabled_tests
-
     std::string executable = getExecutablePath("crash");
 
     ASSERT_TRUE(executableExists(executable)) << "Crash example executable not found: " << executable;
 
-    // Test segfault handling
-    std::string crashOutput = runCommand(executable + " --run-segfault");
+    int exitCode = -1;
+    std::string crashOutput = runCommand(executable + " --run-segfault", &exitCode);
 
-    // Should contain crash report
+    EXPECT_NE(exitCode, 0)
+        << "Crash example should exit non-zero after a segfault. Output: " << crashOutput;
+
     EXPECT_TRUE(crashOutput.find("TEST TERMINATED BY") != std::string::npos)
-        << "Missing crash termination message";
+        << "Missing crash termination message. Output: " << crashOutput;
 
-    EXPECT_TRUE(crashOutput.find("Stack trace") != std::string::npos ||
-                crashOutput.find("CRASH REPORT") != std::string::npos)
-        << "Missing stack trace in crash output";
+    EXPECT_TRUE(crashOutput.find("END OF CRASH REPORT") != std::string::npos)
+        << "Missing end-of-crash-report marker. Output: " << crashOutput;
+
+    EXPECT_TRUE(crashOutput.find("testcoeCrashExampleNullWrite") != std::string::npos)
+        << "Missing crashing function name in stack trace. Output: " << crashOutput;
+
+#if TESTCOE_TEST_EXPECT_SOURCE_LOCATIONS
+    EXPECT_TRUE(crashOutput.find("crash_tests.cpp:") != std::string::npos)
+        << "Missing source file:line in stack trace. Output: " << crashOutput;
+#endif
 }
 
 // Test that examples are built and available
