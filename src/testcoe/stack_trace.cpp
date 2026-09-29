@@ -7,6 +7,7 @@
 #if TESTCOE_STACKTRACE_BACKEND_STD
 #include <stacktrace>
 #include <string>
+#include <type_traits>
 #elif TESTCOE_STACKTRACE_BACKEND_EXECINFO
 #if __has_include(<execinfo.h>)
 #define TESTCOE_HAS_EXECINFO 1
@@ -57,6 +58,15 @@ namespace testcoe
             (void)std::to_string(std::stacktrace::current(0, 1));
         }
 
+        template <typename Handle>
+        std::uintptr_t to_address(Handle handle)
+        {
+            if constexpr (std::is_pointer_v<Handle>)
+                return reinterpret_cast<std::uintptr_t>(handle);
+            else
+                return static_cast<std::uintptr_t>(handle);
+        }
+
         void print_stack_trace(std::ostream &out)
         {
             out << "Stack trace (std::stacktrace):\n";
@@ -68,7 +78,7 @@ namespace testcoe
             for (const auto &entry : trace)
             {
                 frame f{};
-                f.address = static_cast<std::uintptr_t>(entry.native_handle());
+                f.address = to_address(entry.native_handle());
                 f.function = entry.description();
                 f.file = entry.source_file();
                 f.line = static_cast<std::uint32_t>(entry.source_line());

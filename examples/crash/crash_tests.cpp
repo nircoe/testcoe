@@ -23,6 +23,10 @@ class CrashTests : public ::testing::Test
 // Named, non-inlined, externally-linked so the crash backend can resolve a symbol for it
 TESTCOE_CRASH_NOINLINE void testcoeCrashExampleNullWrite()
 {
+    // A real call forces the compiler to create a stack frame for this function.
+    // Without it, a crash before the prologue leaves no frame pointer, so backtrace
+    // can't find this frame on macOS/arm64.
+    std::cout.flush();
     volatile int *nullPtr = nullptr;
     *nullPtr = 42;
 }
