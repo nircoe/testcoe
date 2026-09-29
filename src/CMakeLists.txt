@@ -1,6 +1,7 @@
 add_library(testcoe STATIC
     testcoe/grid_listener.cpp
     testcoe/signal_handler.cpp
+    testcoe/stack_trace.cpp
     testcoe/terminal_utils.cpp
     testcoe.cpp
 )
@@ -20,10 +21,10 @@ endif()
 target_link_libraries(testcoe
     PRIVATE
         ${BACKWARD_TARGET}
-        ${TESTCOE_STACKTRACE_LIBS}
     PUBLIC
         ${GTEST_TARGET}
         testcoe_headers
+        ${TESTCOE_STACKTRACE_LIBS}
 )
 
 if(WIN32)
@@ -49,6 +50,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
     target_compile_options(testcoe PRIVATE -Wall -Wextra -Werror)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(testcoe PRIVATE /W3 /WX)
+endif()
+
+if(TESTCOE_STACKTRACE_BACKEND STREQUAL "execinfo")
+    target_link_options(testcoe INTERFACE -rdynamic)
 endif()
 
 install(
