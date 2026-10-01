@@ -6,9 +6,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# TODO: Remove this when upgrading to a newer version of backward-cpp (newer than v1.6)
-set(CMAKE_POLICY_VERSION_MINIMUM 3.14 CACHE STRING "" FORCE)
-
 if(MSVC)
     # Ensure debug symbols are generated and linked
     add_compile_options(/Z7)
@@ -42,36 +39,6 @@ else()
     set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
     ignore_external_warnings(gtest_main)
-endif()
-
-# backward-cpp
-set(BACKWARD_HAS_BFD 0 CACHE BOOL "Disable BFD support" FORCE)
-set(BACKWARD_HAS_DW 0 CACHE BOOL "Disable libdw support" FORCE)
-set(BACKWARD_HAS_DWARF 0 CACHE BOOL "Disable libdwarf support" FORCE)
-set(BACKWARD_HAS_UNWIND 0 CACHE BOOL "Disable libunwind support" FORCE)
-set(STACK_WALKING_UNWIND TRUE CACHE BOOL "Use unwind for stack walking" FORCE)
-set(STACK_DETAILS_AUTO_DETECT FALSE CACHE BOOL "Auto detect backward details" FORCE)
-set(STACK_DETAILS_BACKTRACE_SYMBOL TRUE CACHE BOOL "Use backtrace symbols" FORCE)
-
-# Windows-specific enhancements for better stack traces
-if(WIN32)
-    set(BACKWARD_HAS_DBGHELP 1 CACHE BOOL "Enable Windows DbgHelp for better stack traces" FORCE)
-endif()
-
-find_package(Backward QUIET)
-if(Backward_FOUND)
-    message(STATUS "[testcoe] Using existing Backward-cpp installation")
-    ignore_external_warnings(Backward::Backward)
-else()
-    message(STATUS "[testcoe] Backward-cpp not found, fetching from source")
-    include(FetchContent)
-    FetchContent_Declare(
-        backward
-        GIT_REPOSITORY https://github.com/bombela/backward-cpp
-        GIT_TAG v1.6
-    )
-    FetchContent_MakeAvailable(backward)
-    ignore_external_warnings(backward)
 endif()
 
 testcoe_detect_stacktrace()
