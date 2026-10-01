@@ -9,11 +9,7 @@ add_executable(testcoe_tests
 copy_mingw_dlls_to_target(testcoe_tests)
 
 # Link ONLY with Google Test - we're testing by running examples as separate processes
-if(TARGET GTest::Main)
-    target_link_libraries(testcoe_tests PRIVATE GTest::Main GTest::gtest)
-else()
-    target_link_libraries(testcoe_tests PRIVATE gtest_main gtest)
-endif()
+target_link_libraries(testcoe_tests PRIVATE gtest_main gtest)
 
 # Make sure examples are built before running tests
 add_dependencies(testcoe_tests basic_example crash_example filter_example)

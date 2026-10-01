@@ -6,15 +6,9 @@ add_library(testcoe STATIC
     testcoe.cpp
 )
 
-if(TARGET GTest::Main)
-    set(GTEST_TARGET GTest::Main)
-else()
-    set(GTEST_TARGET gtest_main)
-endif()
-
 target_link_libraries(testcoe
     PUBLIC
-        ${GTEST_TARGET}
+        gtest_main
         testcoe_headers
         ${TESTCOE_STACKTRACE_LIBS}
 )

@@ -23,23 +23,17 @@ include(cmake/stacktrace.cmake)
 include(cmake/config_header.cmake)
 
 # googletest
-find_package(GTest QUIET)
-if(GTest_FOUND)
-    message(STATUS "[testcoe] Using existing GoogleTest installation")
-    ignore_external_warnings(GTest::Main)
-else()
-    message(STATUS "[testcoe] GoogleTest not found, fetching from source")
-    include(FetchContent)
-    FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG v1.16.0
-    )
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(googletest)
-    ignore_external_warnings(gtest_main)
-endif()
+message(STATUS "[testcoe] Fetching GoogleTest v1.16.0")
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v1.16.0
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+ignore_external_warnings(gtest_main)
 
 testcoe_detect_stacktrace()
 generate_testcoe_config_header()
