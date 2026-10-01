@@ -5,9 +5,15 @@
 #include <ios>
 
 #if TESTCOE_STACKTRACE_BACKEND_STD
+#include <algorithm>
+#include <cctype>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <stacktrace>
 #include <string>
 #include <type_traits>
+#include <vector>
 #elif TESTCOE_STACKTRACE_BACKEND_EXECINFO
 #if __has_include(<execinfo.h>)
 #define TESTCOE_HAS_EXECINFO 1
@@ -67,12 +73,62 @@ namespace testcoe
                 return static_cast<std::uintptr_t>(handle);
         }
 
+        std::string normalize_path(std::string path)
+        {
+            std::replace(path.begin(), path.end(), '\\', '/');
+#ifdef _WIN32
+            std::transform(path.begin(), path.end(), path.begin(),
+                           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+#endif
+            return path;
+        }
+
+        bool is_own_source(const std::string &file)
+        {
+            const std::string own_dir =
+                normalize_path(std::filesystem::path(__FILE__).parent_path().string()) + "/";
+            return normalize_path(file).rfind(own_dir, 0) == 0;
+        }
+
+        // prints the lines around the crash line, returns false if the file couldn't be read
+        bool print_source_snippet(std::ostream &out, const std::string &file, std::uint32_t line)
+        {
+            std::ifstream in(file);
+            if (!in)
+                return false;
+
+            const std::uint32_t first = line > 2 ? line - 2 : 1;
+            const std::uint32_t last = line + 2;
+
+            std::vector<std::string> lines;
+            std::string text;
+            for (std::uint32_t number = 1; number <= last && std::getline(in, text); ++number)
+                if (number >= first)
+                    lines.push_back(text);
+
+            if (lines.empty())
+                return false;
+
+            const int width = static_cast<int>(std::to_string(first + lines.size() - 1).size());
+            for (std::size_t i = 0; i < lines.size(); ++i)
+            {
+                const std::uint32_t number = first + static_cast<std::uint32_t>(i);
+                out << (number == line ? "  > " : "    ") << std::setw(width) << number << " | " << lines[i] << "\n";
+            }
+            return true;
+        }
+
         void print_stack_trace(std::ostream &out)
         {
             out << "Stack trace (std::stacktrace):\n";
 
             // best-effort: capturing from a signal handler / SEH filter isn't strictly async-signal-safe
             auto trace = std::stacktrace::current(1, kMaxFrames);
+
+            // snippets from testcoe's own files are skipped and the count is capped, so the output
+            // stays on the user's code. Reading files here is best-effort too, same as the capture above
+            constexpr std::size_t kMaxSnippets = 3;
+            std::size_t snippets = 0;
 
             std::size_t index = 0;
             for (const auto &entry : trace)
@@ -84,6 +140,9 @@ namespace testcoe
                 f.line = static_cast<std::uint32_t>(entry.source_line());
 
                 print_frame(out, index, f);
+                if (snippets < kMaxSnippets && !f.file.empty() && f.line > 0 && !is_own_source(f.file) &&
+                    print_source_snippet(out, f.file, f.line))
+                    ++snippets;
                 ++index;
             }
         }

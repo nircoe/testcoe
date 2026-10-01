@@ -350,6 +350,9 @@ TEST_F(ExampleTests, CrashExampleHandlesCrashes)
 #if TESTCOE_TEST_EXPECT_SOURCE_LOCATIONS
     EXPECT_TRUE(crashOutput.find("crash_tests.cpp:") != std::string::npos)
         << "Missing source file:line in stack trace. Output: " << crashOutput;
+
+    EXPECT_TRUE(crashOutput.find("testcoe-crash-site") != std::string::npos)
+        << "Missing source snippet in stack trace. Output: " << crashOutput;
 #endif
 }
 

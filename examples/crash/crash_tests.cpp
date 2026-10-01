@@ -28,7 +28,7 @@ TESTCOE_CRASH_NOINLINE void testcoeCrashExampleNullWrite()
     // can't find this frame on macOS/arm64.
     std::cout.flush();
     volatile int *nullPtr = nullptr;
-    *nullPtr = 42;
+    *nullPtr = 42; // testcoe-crash-site
 }
 
 // This test demonstrates a segmentation fault (accessing invalid memory)
