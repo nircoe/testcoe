@@ -14,7 +14,10 @@ target_link_libraries(testcoe_tests PRIVATE gtest_main gtest)
 # Make sure examples are built before running tests
 add_dependencies(testcoe_tests basic_example crash_example filter_example)
 
-target_compile_definitions(testcoe_tests PRIVATE TESTCOE_TEST_EXPECT_SOURCE_LOCATIONS=$<IF:$<STREQUAL:${TESTCOE_STACKTRACE_BACKEND},std>,1,0>)
+target_compile_definitions(testcoe_tests
+    PRIVATE
+        TESTCOE_TEST_EXPECT_SOURCE_LOCATIONS=${TESTCOE_STACKTRACE_BACKEND_STD}
+)
 
 # Compiler flags
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")

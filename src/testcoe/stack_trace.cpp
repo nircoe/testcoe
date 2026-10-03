@@ -2,7 +2,9 @@
 #include <testcoe_config.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <ios>
+#include <string>
 
 #if TESTCOE_STACKTRACE_BACKEND_STD
 #include <algorithm>
@@ -11,22 +13,16 @@
 #include <fstream>
 #include <iomanip>
 #include <stacktrace>
-#include <string>
 #include <type_traits>
 #include <vector>
-#elif TESTCOE_STACKTRACE_BACKEND_EXECINFO
-#if __has_include(<execinfo.h>)
-#define TESTCOE_HAS_EXECINFO 1
+#elif TESTCOE_STACKTRACE_BACKEND_EXECINFO && __has_include(<execinfo.h>)
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <cstdlib>
 #include <iostream>
 #include <unistd.h>
-#else
-#define TESTCOE_HAS_EXECINFO 0
-#endif
-#elif defined(_WIN32)
+#elif defined(_WIN32) && TESTCOE_STACKTRACE_BACKEND_NONE
 #include <windows.h>
 #endif
 
@@ -37,6 +33,15 @@ namespace testcoe
         namespace
         {
             constexpr std::size_t kMaxFrames = 48;
+
+            struct frame
+            {
+                std::uintptr_t address;
+                std::string object;
+                std::string function;
+                std::string file;
+                std::uint32_t line;
+            };
 
             void print_frame(std::ostream &out, std::size_t index, const frame &f)
             {
@@ -147,9 +152,7 @@ namespace testcoe
             }
         }
 
-#elif TESTCOE_STACKTRACE_BACKEND_EXECINFO
-
-#if TESTCOE_HAS_EXECINFO
+#elif TESTCOE_STACKTRACE_BACKEND_EXECINFO && __has_include(<execinfo.h>)
 
         void warm_up_stack_trace()
         {
@@ -189,20 +192,7 @@ namespace testcoe
             }
         }
 
-#else // musl and other libcs without execinfo.h
-
-        void warm_up_stack_trace()
-        {
-        }
-
-        void print_stack_trace(std::ostream &out)
-        {
-            out << "stack trace unavailable\n";
-        }
-
-#endif
-
-#elif defined(_WIN32) // TESTCOE_STACKTRACE_BACKEND_NONE
+#elif defined(_WIN32) && TESTCOE_STACKTRACE_BACKEND_NONE
 
         void warm_up_stack_trace()
         {
@@ -236,7 +226,7 @@ namespace testcoe
             }
         }
 
-#else // TESTCOE_STACKTRACE_BACKEND_NONE preset manually on a non-Windows toolchain
+#else // none on a non-Windows toolchain, or execinfo without execinfo.h (musl)
 
         void warm_up_stack_trace()
         {
