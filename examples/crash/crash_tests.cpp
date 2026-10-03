@@ -4,6 +4,14 @@
 #include <iostream>
 #include <cstdlib>
 
+#if defined(__GNUC__) || defined(__clang__)
+#define TESTCOE_CRASH_NOINLINE [[gnu::noinline]]
+#elif defined(_MSC_VER)
+#define TESTCOE_CRASH_NOINLINE __declspec(noinline)
+#else
+#define TESTCOE_CRASH_NOINLINE
+#endif
+
 class CrashTests : public ::testing::Test
 {
 };
@@ -11,6 +19,17 @@ class CrashTests : public ::testing::Test
 //==============================================================================
 // Segmentation Fault Test
 //==============================================================================
+
+// Named, non-inlined, externally-linked so the crash backend can resolve a symbol for it
+TESTCOE_CRASH_NOINLINE void testcoeCrashExampleNullWrite()
+{
+    // A real call forces the compiler to create a stack frame for this function.
+    // Without it, a crash before the prologue leaves no frame pointer, so backtrace
+    // can't find this frame on macOS/arm64.
+    std::cout.flush();
+    volatile int *nullPtr = nullptr;
+    *nullPtr = 42; // testcoe-crash-site
+}
 
 // This test demonstrates a segmentation fault (accessing invalid memory)
 TEST(CrashTests, SegmentationFault)
@@ -21,8 +40,7 @@ TEST(CrashTests, SegmentationFault)
     // GTEST_SKIP() << "Skipping intentional crash test";
 
     // This will cause a segmentation fault
-    int *nullPtr = nullptr;
-    *nullPtr = 42;
+    testcoeCrashExampleNullWrite();
 
     // We should never reach this point
     FAIL() << "Test did not crash as expected";

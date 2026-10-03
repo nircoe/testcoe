@@ -15,9 +15,13 @@ Thank you for your interest in contributing to testcoe!
 git clone https://github.com/nircoe/testcoe.git
 cd testcoe
 mkdir build && cd build
-cmake -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON ..
+cmake -DTESTCOE_BUILD_EXAMPLES=ON -DTESTCOE_BUILD_TESTS=ON ..
 cmake --build .
 ```
+
+When fetching testcoe from another CMake project, set the same options with
+`set(TESTCOE_BUILD_EXAMPLES ON)` / `set(TESTCOE_BUILD_TESTS ON)` before FetchContent_MakeAvailable
+(tests require examples ON).
 
 ### Running Tests
 
@@ -69,6 +73,10 @@ The CI runs the following checks:
 - Add tests for new features
 - Ensure all tests pass locally
 - Test on multiple platforms if possible
+- The crash test runs in the normal test suite
+- The stack trace backend is chosen at configure time (look for `[testcoe] Stack trace backend:`
+  in CMake output). Override via `set(TESTCOE_STACKTRACE_BACKEND "execinfo" CACHE STRING "")`
+  before fetching, or `-DTESTCOE_STACKTRACE_BACKEND=...` standalone.
 
 ### Pull Request Process
 
@@ -88,7 +96,7 @@ The CI runs the following checks:
 ## Adding New Features
 
 When adding features:
-1. Update the public API in `include/testcoe/testcoe.hpp` if needed
+1. Update the public API in `include/testcoe.hpp` if needed
 2. Add implementation in appropriate source file
 3. Create example demonstrating the feature
 4. Add tests covering the new functionality
@@ -98,7 +106,7 @@ When adding features:
 
 Feel free to reach out at nircoe@gmail.com
 
-I'm here to help make contributing to logcoe as smooth as possible!
+I'm here to help make contributing to testcoe as smooth as possible!
 
 Please open an issue for:
 - Bug reports

@@ -1,9 +1,8 @@
 #include <testcoe/signal_handler.hpp>
+#include <testcoe/stack_trace.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <gtest/gtest.h>
-#define BACKWARD_HAS_BFD 0
-#include <backward.hpp>
 
 // Windows-specific includes for SEH and better stack traces
 #ifdef _WIN32
@@ -79,17 +78,7 @@ namespace testcoe
         std::cerr << std::endl;
         std::cerr.flush();
 
-        // Generate enhanced stack trace using backward-cpp
-        backward::StackTrace stacktrace;
-        stacktrace.load_here();
-
-        backward::Printer printer;
-        printer.object = true;
-        printer.color_mode = backward::ColorMode::always;
-        printer.address = true;
-        printer.snippet = true; // Show source code snippets if available
-
-        printer.print(stacktrace, std::cerr);
+        internal::print_stack_trace(std::cerr);
 
         std::cerr << std::endl
                   << "===== END OF CRASH REPORT =====" << std::endl
@@ -135,15 +124,7 @@ namespace testcoe
 
         std::cerr << std::endl;
 
-        backward::StackTrace stacktrace;
-        stacktrace.load_here();
-
-        backward::Printer printer;
-        printer.object = true;
-        printer.color_mode = backward::ColorMode::always;
-        printer.address = true;
-
-        printer.print(stacktrace, std::cerr);
+        internal::print_stack_trace(std::cerr);
 
         std::cerr << std::endl
                   << "===== END OF CRASH REPORT =====" << std::endl
@@ -155,11 +136,6 @@ namespace testcoe
     void setupStackTraceEnhancements()
     {
 #ifdef _WIN32
-        // Initialize Windows Debug Help Library for better symbol resolution
-        HANDLE process = GetCurrentProcess();
-        SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS | SYMOPT_LOAD_LINES);
-        SymInitialize(process, NULL, TRUE);
-
         // Install Windows structured exception handler
         SetUnhandledExceptionFilter(windowsExceptionHandler);
 
@@ -173,6 +149,8 @@ namespace testcoe
 
         testing::GTEST_FLAG(catch_exceptions) = false;
         std::cout << "Disabled Google Test exception catching for better crash reporting." << std::endl;
+
+        internal::warm_up_stack_trace();
 
         signal(SIGSEGV, signalHandler);
         signal(SIGABRT, signalHandler);

@@ -5,7 +5,7 @@
  * The testcoe namespace contains all functionality related to enhancing
  * the test output experience when using Google Test. It provides visual
  * grid-based test progress display, and signal handling for crashes
- * with detailed stack traces using backward-cpp.
+ * with detailed stack traces.
  */
 
 #pragma once
