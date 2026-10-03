@@ -61,6 +61,7 @@ int main() {
         else()
             message(STATUS "[testcoe] Stack trace backend: ${_TESTCOE_STACKTRACE_BACKEND}")
         endif()
+        message(STATUS "[testcoe] To change: \"set(TESTCOE_STACKTRACE_BACKEND <std|execinfo|none> CACHE STRING \"\")\" before fetching testcoe")
 
         set(TESTCOE_STACKTRACE_BACKEND "${_TESTCOE_STACKTRACE_BACKEND}" PARENT_SCOPE)
         set(TESTCOE_STACKTRACE_LIBS "${_TESTCOE_STACKTRACE_LIBS}" PARENT_SCOPE)
