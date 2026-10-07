@@ -7,9 +7,6 @@
 #include <string>
 
 #if TESTCOE_STACKTRACE_BACKEND_STD
-    #include <algorithm>
-    #include <cctype>
-    #include <filesystem>
     #include <fstream>
     #include <iomanip>
     #include <stacktrace>
@@ -98,23 +95,6 @@ namespace testcoe
                 return static_cast<std::uintptr_t>(handle);
         }
 
-        std::string normalize_path(std::string path)
-        {
-            std::replace(path.begin(), path.end(), '\\', '/');
-#ifdef _WIN32
-            std::transform(path.begin(), path.end(), path.begin(),
-                           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-#endif
-            return path;
-        }
-
-        bool is_own_source(const std::string &file)
-        {
-            const std::string own_dir =
-                normalize_path(std::filesystem::path(__FILE__).parent_path().string()) + "/";
-            return normalize_path(file).rfind(own_dir, 0) == 0;
-        }
-
         // prints the lines around the crash line, returns false if the file couldn't be read
         bool print_source_snippet(std::ostream &out, const std::string &file, std::uint32_t line)
         {
@@ -143,21 +123,32 @@ namespace testcoe
             return true;
         }
 
-        void print_stack_trace(std::ostream &out)
+        void print_stack_trace(std::ostream &out, std::uintptr_t fault_pc)
         {
             out << "Stack trace (std::stacktrace):\n";
 
             // best-effort: capturing from a signal handler / SEH filter isn't strictly async-signal-safe
             auto trace = std::stacktrace::current(1, MAX_FRAMES);
 
-            // snippets from testcoe's own files are skipped and the count is capped, so the output
-            // stays on the user's code. Reading files here is best-effort too, same as the capture above
-            constexpr std::size_t MAX_SNIPPETS = 3;
-            std::size_t snippets = 0;
-
-            std::size_t index = 0;
-            for (const auto &entry : trace)
+            // frames before the faulting one are testcoe's own handler frames, drop them
+            std::size_t fault_index = trace.size();
+            if (fault_pc != 0)
             {
+                for (std::size_t i = 0; i < trace.size(); ++i)
+                {
+                    if (to_address(trace[i].native_handle()) == fault_pc)
+                    {
+                        fault_index = i;
+                        break;
+                    }
+                }
+            }
+            const bool found = fault_index != trace.size();
+            const std::size_t first = found ? fault_index : 0;
+
+            for (std::size_t i = first; i < trace.size(); ++i)
+            {
+                const auto &entry = trace[i];
                 frame f{};
                 f.address = to_address(entry.native_handle());
                 f.function = entry.description();
@@ -168,11 +159,10 @@ namespace testcoe
                     resolve_with_dladdr(f);
 #endif
 
-                print_frame(out, index, f);
-                if (snippets < MAX_SNIPPETS && !f.file.empty() && f.line > 0 && !is_own_source(f.file) &&
-                    print_source_snippet(out, f.file, f.line))
-                    ++snippets;
-                ++index;
+                print_frame(out, i - first, f);
+                // reading files here is best-effort too, same as the capture above
+                if (found && i == first && !f.file.empty() && f.line > 0)
+                    print_source_snippet(out, f.file, f.line);
             }
         }
 
@@ -184,19 +174,43 @@ namespace testcoe
             backtrace(buffer, 1);
         }
 
-        void print_stack_trace(std::ostream &out)
+        void print_stack_trace(std::ostream &out, std::uintptr_t fault_pc)
         {
             out << "Stack trace (execinfo):\n";
 
             void *buffer[MAX_FRAMES];
             int captured = backtrace(buffer, static_cast<int>(MAX_FRAMES));
 
-            for (int index = 0; index < captured; ++index)
+            std::size_t index = 0;
+            int next = 0;
+            if (fault_pc != 0)
+            {
+                frame fault{};
+                fault.address = fault_pc;
+                resolve_with_dladdr(fault);
+                print_frame(out, index++, fault);
+
+                // print_stack_trace, signalHandler and the signal trampoline come first
+                constexpr int HANDLER_FRAMES = 3;
+                next = HANDLER_FRAMES;
+
+                // the interrupted function shows up again when its frame is walked, skip that copy
+                if (next < captured)
+                {
+                    frame caller{};
+                    caller.address = reinterpret_cast<std::uintptr_t>(buffer[next]);
+                    resolve_with_dladdr(caller);
+                    if (!fault.function.empty() && caller.function == fault.function)
+                        ++next;
+                }
+            }
+
+            for (; next < captured; ++next)
             {
                 frame f{};
-                f.address = reinterpret_cast<std::uintptr_t>(buffer[index]);
+                f.address = reinterpret_cast<std::uintptr_t>(buffer[next]);
                 resolve_with_dladdr(f);
-                print_frame(out, static_cast<std::size_t>(index), f);
+                print_frame(out, index++, f);
             }
         }
 
@@ -208,7 +222,7 @@ namespace testcoe
 
     #if defined(_WIN32) && TESTCOE_STACKTRACE_BACKEND_NONE
 
-        void print_stack_trace(std::ostream &out)
+        void print_stack_trace(std::ostream &out, [[maybe_unused]] std::uintptr_t fault_pc)
         {
             out << "Stack trace (none):\n";
 
@@ -237,7 +251,7 @@ namespace testcoe
 
     #else
 
-        void print_stack_trace(std::ostream &out)
+        void print_stack_trace(std::ostream &out, [[maybe_unused]] std::uintptr_t fault_pc)
         {
             out << "stack trace unavailable\n";
         }

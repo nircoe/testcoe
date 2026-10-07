@@ -1,5 +1,6 @@
 #include <testcoe/signal_handler.hpp>
 #include <testcoe/stack_trace.hpp>
+#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <gtest/gtest.h>
@@ -7,6 +8,8 @@
 // Windows-specific includes for SEH and better stack traces
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <signal.h>
 #endif
 
 namespace testcoe
@@ -78,7 +81,8 @@ namespace testcoe
         std::cerr << std::endl;
         std::cerr.flush();
 
-        internal::print_stack_trace(std::cerr);
+        const auto fault_pc = reinterpret_cast<std::uintptr_t>(pExceptionPtrs->ExceptionRecord->ExceptionAddress);
+        internal::print_stack_trace(std::cerr, fault_pc);
 
         std::cerr << std::endl
                   << "===== END OF CRASH REPORT =====" << std::endl
@@ -95,9 +99,39 @@ namespace testcoe
         ExitProcess(1);
         return EXCEPTION_EXECUTE_HANDLER;
     }
+#else
+    namespace internal
+    {
+        namespace
+        {
+            std::uintptr_t get_fault_pc([[maybe_unused]] void *context)
+            {
+#if defined(__linux__) && defined(__x86_64__)
+                return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext.gregs[REG_RIP]);
+#elif defined(__linux__) && defined(__aarch64__)
+                return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext.pc);
+#elif defined(__APPLE__) && defined(__aarch64__)
+                const auto &state = static_cast<ucontext_t *>(context)->uc_mcontext->__ss;
+    #ifdef __darwin_arm_thread_state64_get_pc
+                return static_cast<std::uintptr_t>(__darwin_arm_thread_state64_get_pc(state));
+    #else
+                return static_cast<std::uintptr_t>(state.__pc);
+    #endif
+#elif defined(__APPLE__) && defined(__x86_64__)
+                return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext->__ss.__rip);
+#else
+                return 0;
+#endif
+            }
+        } // namespace
+    } // namespace internal
 #endif
 
+#ifdef _WIN32
     void signalHandler(int signal)
+#else
+    void signalHandler(int signal, siginfo_t *, void *context)
+#endif
     {
         if (g_originalCoutBuf)
             std::cout.rdbuf(g_originalCoutBuf);
@@ -124,7 +158,11 @@ namespace testcoe
 
         std::cerr << std::endl;
 
+#ifdef _WIN32
         internal::print_stack_trace(std::cerr);
+#else
+        internal::print_stack_trace(std::cerr, internal::get_fault_pc(context));
+#endif
 
         std::cerr << std::endl
                   << "===== END OF CRASH REPORT =====" << std::endl
@@ -152,12 +190,21 @@ namespace testcoe
 
         internal::warm_up_stack_trace();
 
-        signal(SIGSEGV, signalHandler);
+#ifdef _WIN32
+        // SIGSEGV, SIGFPE and SIGILL are left out so the UCRT doesn't catch them before
+        // windowsExceptionHandler, which gets the exact fault address
         signal(SIGABRT, signalHandler);
-        signal(SIGFPE, signalHandler);
-        signal(SIGILL, signalHandler);
         signal(SIGTERM, signalHandler);
         signal(SIGINT, signalHandler);
+#else
+        struct sigaction action{};
+        action.sa_sigaction = signalHandler;
+        action.sa_flags = SA_SIGINFO;
+        sigemptyset(&action.sa_mask);
+
+        for (int sig : {SIGSEGV, SIGABRT, SIGFPE, SIGILL, SIGTERM, SIGINT})
+            sigaction(sig, &action, nullptr);
+#endif
 
         setupStackTraceEnhancements();
 
