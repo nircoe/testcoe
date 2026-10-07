@@ -136,7 +136,10 @@ namespace testcoe
             {
                 for (std::size_t i = 0; i < trace.size(); ++i)
                 {
-                    if (to_address(trace[i].native_handle()) == fault_pc)
+                    // libbacktrace stores address - 1 for frames it doesn't know are signal frames,
+                    // and on MinGW the faulting frame looks like a normal one
+                    const std::uintptr_t address = to_address(trace[i].native_handle());
+                    if (address == fault_pc || address + 1 == fault_pc)
                     {
                         fault_index = i;
                         break;
