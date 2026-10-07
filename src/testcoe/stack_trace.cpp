@@ -7,23 +7,24 @@
 #include <string>
 
 #if TESTCOE_STACKTRACE_BACKEND_STD
-#include <algorithm>
-#include <cctype>
-#include <filesystem>
-#include <fstream>
-#include <iomanip>
-#include <stacktrace>
-#include <type_traits>
-#include <vector>
-#elif TESTCOE_STACKTRACE_BACKEND_EXECINFO && __has_include(<execinfo.h>)
-#include <cxxabi.h>
-#include <dlfcn.h>
-#include <execinfo.h>
-#include <cstdlib>
-#include <iostream>
-#include <unistd.h>
+    #include <algorithm>
+    #include <cctype>
+    #include <filesystem>
+    #include <fstream>
+    #include <iomanip>
+    #include <stacktrace>
+    #include <type_traits>
+    #include <vector>
+#elif TESTCOE_STACKTRACE_BACKEND_EXECINFO
+    #include <execinfo.h>
 #elif defined(_WIN32) && TESTCOE_STACKTRACE_BACKEND_NONE
-#include <windows.h>
+    #include <windows.h>
+#endif
+
+#if !defined(_WIN32) && (TESTCOE_STACKTRACE_BACKEND_STD || TESTCOE_STACKTRACE_BACKEND_EXECINFO)
+    #include <cxxabi.h>
+    #include <dlfcn.h>
+    #include <cstdlib>
 #endif
 
 namespace testcoe
@@ -32,7 +33,7 @@ namespace testcoe
     {
         namespace
         {
-            constexpr std::size_t kMaxFrames = 48;
+            [[maybe_unused]] constexpr std::size_t MAX_FRAMES = 48;
 
             struct frame
             {
@@ -43,7 +44,7 @@ namespace testcoe
                 std::uint32_t line;
             };
 
-            void print_frame(std::ostream &out, std::size_t index, const frame &f)
+            [[maybe_unused]] void print_frame(std::ostream &out, std::size_t index, const frame &f)
             {
                 out << "#" << index << " 0x" << std::hex << f.address << std::dec;
                 if (!f.function.empty())
@@ -58,6 +59,25 @@ namespace testcoe
                     out << " [" << f.object << "]";
                 out << "\n";
             }
+
+#if !defined(_WIN32) && (TESTCOE_STACKTRACE_BACKEND_STD || TESTCOE_STACKTRACE_BACKEND_EXECINFO)
+            void resolve_with_dladdr(frame &f)
+            {
+                Dl_info info{};
+                if (!dladdr(reinterpret_cast<void *>(f.address), &info))
+                    return;
+
+                if (info.dli_fname)
+                    f.object = info.dli_fname;
+                if (!info.dli_sname)
+                    return;
+
+                int status = 0;
+                char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
+                f.function = (status == 0 && demangled) ? demangled : info.dli_sname;
+                std::free(demangled);
+            }
+#endif
         } // namespace
 
 #if TESTCOE_STACKTRACE_BACKEND_STD
@@ -66,7 +86,7 @@ namespace testcoe
         {
             // first call to std::stacktrace::current() lazily reads debug info (dl_iterate_phdr etc),
             // none of that is async-signal-safe, so do it once here instead of inside the signal handler
-            (void)std::to_string(std::stacktrace::current(0, 1));
+            [[maybe_unused]] const std::string warm_up = std::to_string(std::stacktrace::current(0, 1));
         }
 
         template <typename Handle>
@@ -128,11 +148,11 @@ namespace testcoe
             out << "Stack trace (std::stacktrace):\n";
 
             // best-effort: capturing from a signal handler / SEH filter isn't strictly async-signal-safe
-            auto trace = std::stacktrace::current(1, kMaxFrames);
+            auto trace = std::stacktrace::current(1, MAX_FRAMES);
 
             // snippets from testcoe's own files are skipped and the count is capped, so the output
             // stays on the user's code. Reading files here is best-effort too, same as the capture above
-            constexpr std::size_t kMaxSnippets = 3;
+            constexpr std::size_t MAX_SNIPPETS = 3;
             std::size_t snippets = 0;
 
             std::size_t index = 0;
@@ -143,16 +163,20 @@ namespace testcoe
                 f.function = entry.description();
                 f.file = entry.source_file();
                 f.line = static_cast<std::uint32_t>(entry.source_line());
+#ifndef _WIN32
+                if (f.function.empty())
+                    resolve_with_dladdr(f);
+#endif
 
                 print_frame(out, index, f);
-                if (snippets < kMaxSnippets && !f.file.empty() && f.line > 0 && !is_own_source(f.file) &&
+                if (snippets < MAX_SNIPPETS && !f.file.empty() && f.line > 0 && !is_own_source(f.file) &&
                     print_source_snippet(out, f.file, f.line))
                     ++snippets;
                 ++index;
             }
         }
 
-#elif TESTCOE_STACKTRACE_BACKEND_EXECINFO && __has_include(<execinfo.h>)
+#elif TESTCOE_STACKTRACE_BACKEND_EXECINFO
 
         void warm_up_stack_trace()
         {
@@ -164,52 +188,37 @@ namespace testcoe
         {
             out << "Stack trace (execinfo):\n";
 
-            void *buffer[kMaxFrames];
-            int captured = backtrace(buffer, static_cast<int>(kMaxFrames));
+            void *buffer[MAX_FRAMES];
+            int captured = backtrace(buffer, static_cast<int>(MAX_FRAMES));
 
             for (int index = 0; index < captured; ++index)
             {
-                Dl_info info{};
-                if (dladdr(buffer[index], &info) && info.dli_sname)
-                {
-                    frame f{};
-                    f.address = reinterpret_cast<std::uintptr_t>(buffer[index]);
-                    f.object = info.dli_fname ? info.dli_fname : "";
-
-                    int status = 0;
-                    char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
-                    f.function = (status == 0 && demangled) ? demangled : info.dli_sname;
-                    std::free(demangled);
-
-                    print_frame(out, static_cast<std::size_t>(index), f);
-                }
-                else
-                {
-                    out.flush();
-                    std::cerr.flush();
-                    backtrace_symbols_fd(&buffer[index], 1, STDERR_FILENO);
-                }
+                frame f{};
+                f.address = reinterpret_cast<std::uintptr_t>(buffer[index]);
+                resolve_with_dladdr(f);
+                print_frame(out, static_cast<std::size_t>(index), f);
             }
         }
 
-#elif defined(_WIN32) && TESTCOE_STACKTRACE_BACKEND_NONE
+#else
 
         void warm_up_stack_trace()
         {
         }
 
+    #if defined(_WIN32) && TESTCOE_STACKTRACE_BACKEND_NONE
+
         void print_stack_trace(std::ostream &out)
         {
             out << "Stack trace (none):\n";
 
-            void *buffer[kMaxFrames];
-            USHORT captured = CaptureStackBackTrace(0, static_cast<DWORD>(kMaxFrames), buffer, nullptr);
+            void *buffer[MAX_FRAMES];
+            USHORT captured = CaptureStackBackTrace(0, static_cast<DWORD>(MAX_FRAMES), buffer, nullptr);
 
             for (USHORT index = 0; index < captured; ++index)
             {
                 frame f{};
                 f.address = reinterpret_cast<std::uintptr_t>(buffer[index]);
-                f.line = 0;
 
                 HMODULE module = nullptr;
                 if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
@@ -226,16 +235,14 @@ namespace testcoe
             }
         }
 
-#else // none on a non-Windows toolchain, or execinfo without execinfo.h (musl)
-
-        void warm_up_stack_trace()
-        {
-        }
+    #else
 
         void print_stack_trace(std::ostream &out)
         {
             out << "stack trace unavailable\n";
         }
+
+    #endif
 
 #endif
 

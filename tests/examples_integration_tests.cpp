@@ -344,8 +344,10 @@ TEST_F(ExampleTests, CrashExampleHandlesCrashes)
     EXPECT_TRUE(crashOutput.find("END OF CRASH REPORT") != std::string::npos)
         << "Missing end-of-crash-report marker. Output: " << crashOutput;
 
+#if TESTCOE_TEST_EXPECT_FUNCTION_NAMES
     EXPECT_TRUE(crashOutput.find("testcoeCrashExampleNullWrite") != std::string::npos)
         << "Missing crashing function name in stack trace. Output: " << crashOutput;
+#endif
 
 #if TESTCOE_TEST_EXPECT_SOURCE_LOCATIONS
     EXPECT_TRUE(crashOutput.find("crash_tests.cpp:") != std::string::npos)

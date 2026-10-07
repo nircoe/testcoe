@@ -17,10 +17,11 @@ add_dependencies(testcoe_tests basic_example crash_example filter_example)
 target_compile_definitions(testcoe_tests
     PRIVATE
         TESTCOE_TEST_EXPECT_SOURCE_LOCATIONS=${TESTCOE_STACKTRACE_BACKEND_STD}
+        TESTCOE_TEST_EXPECT_FUNCTION_NAMES=$<NOT:${TESTCOE_STACKTRACE_BACKEND_NONE}>
 )
 
 # Compiler flags
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(testcoe_tests PRIVATE -Wall -Wextra -Werror)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(testcoe_tests PRIVATE /W3 /WX)
