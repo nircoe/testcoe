@@ -1,14 +1,15 @@
 #include <testcoe/signal_handler.hpp>
+#include <testcoe/stack_trace.hpp>
+#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <gtest/gtest.h>
-#define BACKWARD_HAS_BFD 0
-#include <backward.hpp>
 
 // Windows-specific includes for SEH and better stack traces
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#include <signal.h>
 
 namespace testcoe
 {
@@ -79,17 +80,8 @@ namespace testcoe
         std::cerr << std::endl;
         std::cerr.flush();
 
-        // Generate enhanced stack trace using backward-cpp
-        backward::StackTrace stacktrace;
-        stacktrace.load_here();
-
-        backward::Printer printer;
-        printer.object = true;
-        printer.color_mode = backward::ColorMode::always;
-        printer.address = true;
-        printer.snippet = true; // Show source code snippets if available
-
-        printer.print(stacktrace, std::cerr);
+        const auto fault_pc = reinterpret_cast<std::uintptr_t>(pExceptionPtrs->ExceptionRecord->ExceptionAddress);
+        internal::print_stack_trace(std::cerr, fault_pc);
 
         std::cerr << std::endl
                   << "===== END OF CRASH REPORT =====" << std::endl
@@ -106,9 +98,39 @@ namespace testcoe
         ExitProcess(1);
         return EXCEPTION_EXECUTE_HANDLER;
     }
+#else
+    namespace internal
+    {
+        namespace
+        {
+            std::uintptr_t get_fault_pc([[maybe_unused]] void *context)
+            {
+#if defined(__linux__) && defined(__x86_64__)
+                return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext.gregs[REG_RIP]);
+#elif defined(__linux__) && defined(__aarch64__)
+                return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext.pc);
+#elif defined(__APPLE__) && defined(__aarch64__)
+                const auto &state = static_cast<ucontext_t *>(context)->uc_mcontext->__ss;
+    #ifdef __darwin_arm_thread_state64_get_pc
+                return static_cast<std::uintptr_t>(__darwin_arm_thread_state64_get_pc(state));
+    #else
+                return static_cast<std::uintptr_t>(state.__pc);
+    #endif
+#elif defined(__APPLE__) && defined(__x86_64__)
+                return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext->__ss.__rip);
+#else
+                return 0;
+#endif
+            }
+        } // namespace
+    } // namespace internal
 #endif
 
+#ifdef _WIN32
     void signalHandler(int signal)
+#else
+    void signalHandler(int signal, siginfo_t *, void *context)
+#endif
     {
         if (g_originalCoutBuf)
             std::cout.rdbuf(g_originalCoutBuf);
@@ -135,15 +157,18 @@ namespace testcoe
 
         std::cerr << std::endl;
 
-        backward::StackTrace stacktrace;
-        stacktrace.load_here();
-
-        backward::Printer printer;
-        printer.object = true;
-        printer.color_mode = backward::ColorMode::always;
-        printer.address = true;
-
-        printer.print(stacktrace, std::cerr);
+#ifdef _WIN32
+        std::uintptr_t fault_pc = 0;
+    #ifdef _MSC_VER
+        // only set while the CRT runs this handler for a hardware exception, null for raise()
+        const auto *info = static_cast<EXCEPTION_POINTERS *>(_pxcptinfoptrs);
+        if (info && info->ExceptionRecord)
+            fault_pc = reinterpret_cast<std::uintptr_t>(info->ExceptionRecord->ExceptionAddress);
+    #endif
+        internal::print_stack_trace(std::cerr, fault_pc);
+#else
+        internal::print_stack_trace(std::cerr, internal::get_fault_pc(context));
+#endif
 
         std::cerr << std::endl
                   << "===== END OF CRASH REPORT =====" << std::endl
@@ -155,11 +180,6 @@ namespace testcoe
     void setupStackTraceEnhancements()
     {
 #ifdef _WIN32
-        // Initialize Windows Debug Help Library for better symbol resolution
-        HANDLE process = GetCurrentProcess();
-        SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS | SYMOPT_LOAD_LINES);
-        SymInitialize(process, NULL, TRUE);
-
         // Install Windows structured exception handler
         SetUnhandledExceptionFilter(windowsExceptionHandler);
 
@@ -174,12 +194,30 @@ namespace testcoe
         testing::GTEST_FLAG(catch_exceptions) = false;
         std::cout << "Disabled Google Test exception catching for better crash reporting." << std::endl;
 
-        signal(SIGSEGV, signalHandler);
+        internal::warm_up_stack_trace();
+
+#ifdef _WIN32
         signal(SIGABRT, signalHandler);
-        signal(SIGFPE, signalHandler);
-        signal(SIGILL, signalHandler);
         signal(SIGTERM, signalHandler);
         signal(SIGINT, signalHandler);
+
+    #ifdef _MSC_VER
+        // The CRT catches hardware faults before windowsExceptionHandler on MSVC, so these need
+        // signal(). signalHandler reads the fault address from the CRT exception pointers. On
+        // MinGW signal() would catch them too but without the address, so they are left out.
+        signal(SIGSEGV, signalHandler);
+        signal(SIGFPE, signalHandler);
+        signal(SIGILL, signalHandler);
+    #endif
+#else
+        struct sigaction action{};
+        action.sa_sigaction = signalHandler;
+        action.sa_flags = SA_SIGINFO;
+        sigemptyset(&action.sa_mask);
+
+        for (int sig : {SIGSEGV, SIGABRT, SIGFPE, SIGILL, SIGTERM, SIGINT})
+            sigaction(sig, &action, nullptr);
+#endif
 
         setupStackTraceEnhancements();
 

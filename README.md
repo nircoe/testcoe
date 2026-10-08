@@ -23,7 +23,6 @@ When tests crash, you get detailed stack traces instead of silent failures.
 
 ## Dependencies
 - [**Google Test**](https://github.com/google/googletest) (v1.16.0) - Test framework
-- [**backward-cpp**](https://github.com/bombela/backward-cpp) (v1.6) - Stack trace generation
 
 ## Quick Start
 
@@ -74,6 +73,10 @@ See the [examples/](examples/) directory for demonstrations:
 - C++23 or later
 - CMake 3.14+
 - Google Test (automatically included)
+- Stack traces use `std::stacktrace` where the toolchain supports it (GCC 13+, MSVC), or
+  `<execinfo.h>` otherwise (macOS).
+- File:line and source snippets in crash reports need the `std::stacktrace` backend. The fallback
+  shows function names and addresses.
 
 ## API Reference
 

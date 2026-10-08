@@ -76,3 +76,6 @@ To enable a crash test, edit `crash_tests.cpp` and:
    - Shows a detailed stack trace
    - Provides helpful debugging information
 3. testcoe restores output streams even when a crash occurs with redirected streams
+4. Trace detail depends on the platform backend:
+   - File:line and source snippets with the std::stacktrace backend
+   - Function names and addresses with the fallback (macOS)
