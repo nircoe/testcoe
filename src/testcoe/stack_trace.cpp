@@ -19,6 +19,7 @@
 #endif
 
 #if !defined(_WIN32) && (TESTCOE_STACKTRACE_BACKEND_STD || TESTCOE_STACKTRACE_BACKEND_EXECINFO)
+    #define TESTCOE_USE_DLADDR 1
     #include <cxxabi.h>
     #include <dlfcn.h>
     #include <cstdlib>
@@ -57,7 +58,7 @@ namespace testcoe
                 out << "\n";
             }
 
-#if !defined(_WIN32) && (TESTCOE_STACKTRACE_BACKEND_STD || TESTCOE_STACKTRACE_BACKEND_EXECINFO)
+#ifdef TESTCOE_USE_DLADDR
             void resolve_with_dladdr(frame &f)
             {
                 Dl_info info{};
@@ -73,6 +74,14 @@ namespace testcoe
                 char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
                 f.function = (status == 0 && demangled) ? demangled : info.dli_sname;
                 std::free(demangled);
+            }
+
+            [[maybe_unused]] frame resolve_address(std::uintptr_t address)
+            {
+                frame f{};
+                f.address = address;
+                resolve_with_dladdr(f);
+                return f;
             }
 #endif
         } // namespace
@@ -131,7 +140,8 @@ namespace testcoe
             auto trace = std::stacktrace::current(1, MAX_FRAMES);
 
             // frames before the faulting one are testcoe's own handler frames, drop them
-            std::size_t fault_index = trace.size();
+            std::size_t first = 0;
+            bool found = false;
             if (fault_pc != 0)
             {
                 for (std::size_t i = 0; i < trace.size(); ++i)
@@ -141,13 +151,12 @@ namespace testcoe
                     const std::uintptr_t address = to_address(trace[i].native_handle());
                     if (address == fault_pc || address + 1 == fault_pc)
                     {
-                        fault_index = i;
+                        first = i;
+                        found = true;
                         break;
                     }
                 }
             }
-            const bool found = fault_index != trace.size();
-            const std::size_t first = found ? fault_index : 0;
 
             for (std::size_t i = first; i < trace.size(); ++i)
             {
@@ -157,7 +166,7 @@ namespace testcoe
                 f.function = entry.description();
                 f.file = entry.source_file();
                 f.line = static_cast<std::uint32_t>(entry.source_line());
-#ifndef _WIN32
+#ifdef TESTCOE_USE_DLADDR
                 if (f.function.empty())
                     resolve_with_dladdr(f);
 #endif
@@ -185,34 +194,26 @@ namespace testcoe
             int captured = backtrace(buffer, static_cast<int>(MAX_FRAMES));
 
             std::size_t index = 0;
-            int next = 0;
+            int first = 0;
+            frame fault{};
             if (fault_pc != 0)
             {
-                frame fault{};
-                fault.address = fault_pc;
-                resolve_with_dladdr(fault);
+                fault = resolve_address(fault_pc);
                 print_frame(out, index++, fault);
 
                 // print_stack_trace, signalHandler and the signal trampoline come first
                 constexpr int HANDLER_FRAMES = 3;
-                next = HANDLER_FRAMES;
-
-                // the interrupted function shows up again when its frame is walked, skip that copy
-                if (next < captured)
-                {
-                    frame caller{};
-                    caller.address = reinterpret_cast<std::uintptr_t>(buffer[next]);
-                    resolve_with_dladdr(caller);
-                    if (!fault.function.empty() && caller.function == fault.function)
-                        ++next;
-                }
+                first = HANDLER_FRAMES;
             }
 
-            for (; next < captured; ++next)
+            for (int i = first; i < captured; ++i)
             {
-                frame f{};
-                f.address = reinterpret_cast<std::uintptr_t>(buffer[next]);
-                resolve_with_dladdr(f);
+                const frame f = resolve_address(reinterpret_cast<std::uintptr_t>(buffer[i]));
+
+                // the interrupted function shows up again when its frame is walked, skip that copy
+                if (i == first && !fault.function.empty() && f.function == fault.function)
+                    continue;
+
                 print_frame(out, index++, f);
             }
         }
