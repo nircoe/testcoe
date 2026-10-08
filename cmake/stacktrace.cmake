@@ -26,7 +26,7 @@ endfunction()
 function(testcoe_detect_stacktrace)
     set(TESTCOE_STACKTRACE_BACKEND "" CACHE STRING "override: std, execinfo or none (empty = auto)")
     set(_preset "$CACHE{TESTCOE_STACKTRACE_BACKEND}")
-    if(_preset AND NOT _preset MATCHES "^(std|execinfo|none)$")
+    if(NOT _preset STREQUAL "" AND NOT _preset MATCHES "^(std|execinfo|none)$")
         message(FATAL_ERROR "[testcoe] TESTCOE_STACKTRACE_BACKEND must be std, execinfo or none, got \"${_preset}\"")
     endif()
 
@@ -76,6 +76,12 @@ int main() {
             list(APPEND _execinfo_candidates "${CMAKE_DL_LIBS}")
         endif()
         testcoe_probe_libs("${_execinfo_probe_src}" TESTCOE_EXECINFO_COMPILES _execinfo_candidates _execinfo_found _execinfo_lib)
+    endif()
+
+    if(_preset STREQUAL "std" AND NOT _std_found)
+        message(FATAL_ERROR "[testcoe] TESTCOE_STACKTRACE_BACKEND is std but the std::stacktrace probe failed")
+    elseif(_preset STREQUAL "execinfo" AND NOT _execinfo_found)
+        message(FATAL_ERROR "[testcoe] TESTCOE_STACKTRACE_BACKEND is execinfo but the execinfo probe failed")
     endif()
 
     if(_preset)

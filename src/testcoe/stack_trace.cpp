@@ -158,6 +158,7 @@ namespace testcoe
                 }
             }
 
+            bool snippet_printed = false;
             for (std::size_t i = first; i < trace.size(); ++i)
             {
                 const auto &entry = trace[i];
@@ -172,9 +173,10 @@ namespace testcoe
 #endif
 
                 print_frame(out, i - first, f);
+                // without a match on the fault pc, handler frames look like user frames, so no snippet then.
                 // reading files here is best-effort too, same as the capture above
-                if (found && i == first && !f.file.empty() && f.line > 0)
-                    print_source_snippet(out, f.file, f.line);
+                if (found && !snippet_printed && !f.file.empty() && f.line > 0)
+                    snippet_printed = print_source_snippet(out, f.file, f.line);
             }
         }
 
@@ -211,7 +213,7 @@ namespace testcoe
                 const frame f = resolve_address(reinterpret_cast<std::uintptr_t>(buffer[i]));
 
                 // the interrupted function shows up again when its frame is walked, skip that copy
-                if (i == first && !fault.function.empty() && f.function == fault.function)
+                if (i == first && (f.address == fault_pc || (!fault.function.empty() && f.function == fault.function)))
                     continue;
 
                 print_frame(out, index++, f);
@@ -226,14 +228,28 @@ namespace testcoe
 
     #if defined(_WIN32) && TESTCOE_STACKTRACE_BACKEND_NONE
 
-        void print_stack_trace(std::ostream &out, [[maybe_unused]] std::uintptr_t fault_pc)
+        void print_stack_trace(std::ostream &out, std::uintptr_t fault_pc)
         {
             out << "Stack trace (none):\n";
 
             void *buffer[MAX_FRAMES];
             USHORT captured = CaptureStackBackTrace(0, static_cast<DWORD>(MAX_FRAMES), buffer, nullptr);
 
-            for (USHORT index = 0; index < captured; ++index)
+            // frames before the faulting one are testcoe's own handler frames, drop them
+            USHORT first = 0;
+            if (fault_pc != 0)
+            {
+                for (USHORT index = 0; index < captured; ++index)
+                {
+                    if (reinterpret_cast<std::uintptr_t>(buffer[index]) == fault_pc)
+                    {
+                        first = index;
+                        break;
+                    }
+                }
+            }
+
+            for (USHORT index = first; index < captured; ++index)
             {
                 frame f{};
                 f.address = reinterpret_cast<std::uintptr_t>(buffer[index]);
@@ -249,7 +265,7 @@ namespace testcoe
                         f.object.assign(path, len);
                 }
 
-                print_frame(out, static_cast<std::size_t>(index), f);
+                print_frame(out, static_cast<std::size_t>(index - first), f);
             }
         }
 

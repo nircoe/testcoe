@@ -8,9 +8,8 @@
 // Windows-specific includes for SEH and better stack traces
 #ifdef _WIN32
 #include <windows.h>
-#else
-#include <signal.h>
 #endif
+#include <signal.h>
 
 namespace testcoe
 {
@@ -159,7 +158,14 @@ namespace testcoe
         std::cerr << std::endl;
 
 #ifdef _WIN32
-        internal::print_stack_trace(std::cerr);
+        std::uintptr_t fault_pc = 0;
+    #ifdef _MSC_VER
+        // only set while the CRT runs this handler for a hardware exception, null for raise()
+        const auto *info = static_cast<EXCEPTION_POINTERS *>(_pxcptinfoptrs);
+        if (info && info->ExceptionRecord)
+            fault_pc = reinterpret_cast<std::uintptr_t>(info->ExceptionRecord->ExceptionAddress);
+    #endif
+        internal::print_stack_trace(std::cerr, fault_pc);
 #else
         internal::print_stack_trace(std::cerr, internal::get_fault_pc(context));
 #endif
@@ -191,9 +197,13 @@ namespace testcoe
         internal::warm_up_stack_trace();
 
 #ifdef _WIN32
-        // SIGSEGV, SIGFPE and SIGILL are left out so the UCRT doesn't catch them before
-        // windowsExceptionHandler, which gets the exact fault address
+        // On MSVC the CRT catches hardware faults before windowsExceptionHandler, so these also
+        // need signal(). signalHandler reads the fault address from the CRT exception pointers.
+        // On MinGW they only fire for raise(), hardware faults go to windowsExceptionHandler.
+        signal(SIGSEGV, signalHandler);
         signal(SIGABRT, signalHandler);
+        signal(SIGFPE, signalHandler);
+        signal(SIGILL, signalHandler);
         signal(SIGTERM, signalHandler);
         signal(SIGINT, signalHandler);
 #else
