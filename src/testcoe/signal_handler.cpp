@@ -197,15 +197,18 @@ namespace testcoe
         internal::warm_up_stack_trace();
 
 #ifdef _WIN32
-        // On MSVC the CRT catches hardware faults before windowsExceptionHandler, so these also
-        // need signal(). signalHandler reads the fault address from the CRT exception pointers.
-        // On MinGW they only fire for raise(), hardware faults go to windowsExceptionHandler.
-        signal(SIGSEGV, signalHandler);
         signal(SIGABRT, signalHandler);
-        signal(SIGFPE, signalHandler);
-        signal(SIGILL, signalHandler);
         signal(SIGTERM, signalHandler);
         signal(SIGINT, signalHandler);
+
+    #ifdef _MSC_VER
+        // The CRT catches hardware faults before windowsExceptionHandler on MSVC, so these need
+        // signal(). signalHandler reads the fault address from the CRT exception pointers. On
+        // MinGW signal() would catch them too but without the address, so they are left out.
+        signal(SIGSEGV, signalHandler);
+        signal(SIGFPE, signalHandler);
+        signal(SIGILL, signalHandler);
+    #endif
 #else
         struct sigaction action{};
         action.sa_sigaction = signalHandler;
