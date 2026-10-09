@@ -1,13 +1,10 @@
 # Contributing to testcoe
 
-Thank you for your interest in contributing to testcoe!
-
 ## Development Setup
 
 ### Prerequisites
 - CMake 3.14+
 - C++23 compatible compiler
-- Git
 
 ### Building from Source
 
@@ -66,28 +63,16 @@ The CI runs the following checks:
 ## Making Changes
 
 ### Code Style
-- Follow existing naming conventions
 - Keep lines under 120 characters
-- Add comments for complex logic
 
 ### Testing
-- Add tests for new features
-- Ensure all tests pass locally
-- Test on multiple platforms if possible
-- The crash test runs in the normal test suite
 - The stack trace backend is chosen at configure time (look for `[testcoe] Stack trace backend:`
   in CMake output). Override via `set(TESTCOE_STACKTRACE_BACKEND "execinfo" CACHE STRING "")`
   before fetching, or `-DTESTCOE_STACKTRACE_BACKEND=...` standalone.
 
 ### Pull Request Process
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests locally
-5. Commit with clear messages
-6. Push to your fork
-7. Open a Pull Request from your fork to the main repository
+Open a PR from a feature branch against `main`. CI must pass.
 
 ### Commit Messages
 - Use prefix for PR title `[Subject]: <PR title>`
@@ -107,8 +92,4 @@ When adding features:
 
 Feel free to reach out at nircoe@gmail.com
 
-Please open an issue for:
-- Bug reports
-- Feature requests
-- Questions about the codebase
-- Discussion about implementation
+Open an issue on GitHub for bug reports, feature requests or questions.
