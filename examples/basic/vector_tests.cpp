@@ -4,13 +4,11 @@
 #include <chrono>
 #include <thread>
 
-// Helper function to make tests take varying amounts of time
 void delayVectorTests(int milliseconds)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 }
 
-// Vector test suite
 TEST(VectorTest, PushBack)
 {
     delayVectorTests(150);
@@ -41,7 +39,6 @@ TEST(VectorTest, Sort)
     std::vector<int> v = {5, 3, 1, 4, 2};
     std::sort(v.begin(), v.end());
 
-    // Test that sorting worked correctly
     for (size_t i = 1; i < v.size(); ++i)
     {
         EXPECT_LE(v[i - 1], v[i]) << "Vector not sorted at index " << i;

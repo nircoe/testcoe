@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 
-// Platform-specific includes
 #ifdef _WIN32
 #include <io.h>
 #include <process.h>
@@ -25,13 +24,11 @@
 class ExampleTests : public ::testing::Test
 {
 protected:
-    // Helper function to run a command and capture its output (cross-platform)
     std::string runCommand(const std::string &command, int *exitCodeOut = nullptr)
     {
         std::string result;
         std::string fullCommand = command;
 
-        // Redirect stderr to stdout for both platforms
         fullCommand += " 2>&1";
 
 #ifdef _WIN32
@@ -45,7 +42,7 @@ protected:
             return "ERROR: Failed to run command: " + command;
         }
 
-        char buffer[512]; // Larger buffer for better performance
+        char buffer[512];
         while (fgets(buffer, sizeof(buffer), pipe) != nullptr)
         {
             result += buffer;
@@ -56,7 +53,7 @@ protected:
         exitCode = _pclose(pipe);
 #else
         exitCode = pclose(pipe);
-        // On Unix, pclose returns the exit status in a format that needs WEXITSTATUS
+        // On Unix pclose returns the raw wait status
         if (WIFEXITED(exitCode))
         {
             exitCode = WEXITSTATUS(exitCode);
@@ -69,19 +66,15 @@ protected:
         return result;
     }
 
-    // Helper to check if executable exists (cross-platform)
     bool executableExists(const std::string &path)
     {
 #ifdef _WIN32
-        // On Windows, use _access to check file existence and readability
         return (_access(path.c_str(), 0) == 0);
 #else
-        // On Unix-like systems, check if file exists and is executable
         return (access(path.c_str(), F_OK) == 0 && access(path.c_str(), X_OK) == 0);
 #endif
     }
 
-    // Helper to get the directory where the test executable is located
     std::string getExecutableDirectory()
     {
 #ifdef _WIN32
@@ -89,7 +82,7 @@ protected:
         DWORD length = GetModuleFileNameA(NULL, path, MAX_PATH);
         if (length == 0)
         {
-            return "."; // Fallback to current directory
+            return ".";
         }
 
         std::string exePath(path);
@@ -104,7 +97,7 @@ protected:
         ssize_t length = readlink("/proc/self/exe", path, sizeof(path) - 1);
         if (length == -1)
         {
-            return "."; // Fallback to current directory
+            return ".";
         }
 
         path[length] = '\0';
@@ -118,17 +111,13 @@ protected:
 #endif
     }
 
-    // Helper to get the correct executable path based on build system
     std::string getExecutablePath(const std::string &exampleName)
     {
-        // Get the directory where this test executable is located
         std::string testDir = getExecutableDirectory();
 
-        // Try different relative paths from the test executable location
         std::vector<std::string> possiblePaths;
 
 #ifdef _WIN32
-        // Windows paths - calculate from test executable location
         possiblePaths = {
             // From tests/Debug to examples (typical MSVC structure)
             testDir + "/../../examples/" + exampleName + "/Debug/" + exampleName + "_example.exe",
@@ -138,17 +127,14 @@ protected:
             testDir + "/../examples/" + exampleName + "/Debug/" + exampleName + "_example.exe",
             testDir + "/../examples/" + exampleName + "/Release/" + exampleName + "_example.exe",
             testDir + "/../examples/" + exampleName + "/" + exampleName + "_example.exe",
-            // Same directory as test
             testDir + "/" + exampleName + "_example.exe"};
 #else
-        // Unix-like systems
         possiblePaths = {
             testDir + "/../examples/" + exampleName + "/" + exampleName + "_example",
             testDir + "/../../examples/" + exampleName + "/" + exampleName + "_example",
             testDir + "/" + exampleName + "_example"};
 #endif
 
-        // Return the first path that exists
         for (const auto &path : possiblePaths)
         {
             if (executableExists(path))
@@ -158,7 +144,6 @@ protected:
             }
         }
 
-        // If none found, return the most likely path for error reporting
 #ifdef _WIN32
         return testDir + "/../../examples/" + exampleName + "/Debug/" + exampleName + "_example.exe";
 #else
@@ -167,26 +152,21 @@ protected:
     }
 };
 
-// Test that basic example runs and shows expected output
 TEST_F(ExampleTests, BasicExampleRuns)
 {
     std::string executable = getExecutablePath("basic");
     std::cout << "getExecutablePath of \"basic\" returned: " << executable << std::endl;
 
-    // Check if executable exists
     ASSERT_TRUE(executableExists(executable)) << "Basic example executable not found: " << executable;
 
-    // Run the basic example
     std::string output = runCommand(executable);
 
-    // Debug output for CI
     std::cout << "Basic example output length: " << output.length() << std::endl;
     if (output.find("ERROR:") != std::string::npos)
     {
         std::cout << "Error in output: " << output << std::endl;
     }
 
-    // Verify it contains expected elements
     EXPECT_TRUE(output.find("testcoe Basic Example") != std::string::npos)
         << "Missing header in basic example output";
 
@@ -202,12 +182,10 @@ TEST_F(ExampleTests, BasicExampleRuns)
     EXPECT_TRUE(output.find("VectorTest") != std::string::npos)
         << "Missing VectorTest suite in output";
 
-    // Should show grid visualization elements
     EXPECT_TRUE(output.find("P - Passed") != std::string::npos ||
                 output.find("Passed") != std::string::npos)
         << "Missing grid legend in output";
 
-    // Should show summary
     EXPECT_TRUE(output.find("Test  Summary") != std::string::npos ||
                 output.find("Summary") != std::string::npos)
         << "Missing test summary in output";
@@ -237,7 +215,7 @@ TEST_F(ExampleTests, BasicExampleNonInteractiveOutputHasNoDuplicateGridFrames)
         << "Non-interactive output should contain exactly one grid frame (the final summary), "
         << "not one per test start/end event. Output:\n" << output;
 
-    // Loose bound - a duplicate-frame regression would blow well past this.
+    // Loose bound. A duplicate-frame regression would blow well past this.
     std::size_t lineCount = 0;
     for (char c : output)
         if (c == '\n')
@@ -248,46 +226,40 @@ TEST_F(ExampleTests, BasicExampleNonInteractiveOutputHasNoDuplicateGridFrames)
         << "duplicate-frame regression. Output:\n" << output;
 }
 
-// Test that filter example runs with different options
 TEST_F(ExampleTests, FilterExampleRuns)
 {
     std::string executable = getExecutablePath("filter");
 
     ASSERT_TRUE(executableExists(executable)) << "Filter example executable not found: " << executable;
 
-    // Test help option
     std::string helpOutput = runCommand(executable + " --help");
     EXPECT_TRUE(helpOutput.find("Usage:") != std::string::npos)
         << "Help option not working. Output: " << helpOutput;
 
-    // Test running all tests
     std::string allOutput = runCommand(executable + " --all");
     EXPECT_TRUE(allOutput.find("Running all tests") != std::string::npos)
         << "All tests option not working";
     EXPECT_TRUE(allOutput.find("MathSuite") != std::string::npos)
         << "Missing MathSuite in filter example";
 
-    // Test running specific suite
     std::string suiteOutput = runCommand(executable + " --suite=MathSuite");
     EXPECT_TRUE(suiteOutput.find("Running suite: MathSuite") != std::string::npos)
         << "Suite filtering not working";
     EXPECT_TRUE(suiteOutput.find("MathSuite") != std::string::npos)
         << "MathSuite not run when filtered";
 
-    // Test running specific test
     std::string testOutput = runCommand(executable + " --test=MathSuite.Addition");
     EXPECT_TRUE(testOutput.find("Running test: MathSuite.Addition") != std::string::npos)
         << "Test filtering not working";
 }
 
-// Test that crash example runs (without actual crashes)
 TEST_F(ExampleTests, CrashExampleRuns)
 {
     std::string executable = getExecutablePath("crash");
 
     ASSERT_TRUE(executableExists(executable)) << "Crash example executable not found: " << executable;
 
-    // Run without crash flags (should run basic tests only)
+    // Without a --run-* flag only the basic tests run
     std::string output = runCommand(executable);
 
     EXPECT_TRUE(output.find("testcoe Crash Handling Example") != std::string::npos)
@@ -296,7 +268,6 @@ TEST_F(ExampleTests, CrashExampleRuns)
     EXPECT_TRUE(output.find("BasicTests") != std::string::npos)
         << "Missing BasicTests in crash example";
 
-    // Should mention crash test skipping (look for various skip-related words)
     bool hasSkipMessage = (output.find("Skipping") != std::string::npos) ||
                           (output.find("SKIP") != std::string::npos) ||
                           (output.find("skipped") != std::string::npos) ||
@@ -306,7 +277,7 @@ TEST_F(ExampleTests, CrashExampleRuns)
         << "Crash tests should be skipped by default. Output: " << output;
 }
 
-// EXPECT_DEATH must pass cleanly under testcoe's handlers (see signal_handler.cpp's internal_run_death_test guard)
+// EXPECT_DEATH must pass cleanly under testcoe's handlers (see the internal_run_death_test guard in src/testcoe.cpp)
 TEST_F(ExampleTests, CrashExampleDeathTestPassesCleanly)
 {
     std::string executable = getExecutablePath("crash");
@@ -325,7 +296,6 @@ TEST_F(ExampleTests, CrashExampleDeathTestPassesCleanly)
         << "Death test run should report success via testcoe's own summary. Output: " << output;
 }
 
-// Test that crash example actually handles crashes and produces a usable stack trace
 TEST_F(ExampleTests, CrashExampleHandlesCrashes)
 {
     std::string executable = getExecutablePath("crash");
@@ -358,10 +328,8 @@ TEST_F(ExampleTests, CrashExampleHandlesCrashes)
 #endif
 }
 
-// Test that examples are built and available
 TEST_F(ExampleTests, AllExamplesExist)
 {
-    // Check that all expected executables exist
     std::vector<std::string> examples = {
         "basic",
         "crash",
@@ -374,13 +342,11 @@ TEST_F(ExampleTests, AllExamplesExist)
     }
 }
 
-// Test that examples produce reasonable exit codes
 TEST_F(ExampleTests, ExampleExitCodes)
 {
     // Basic example should not crash (exit code < 128)
     std::string basicCmd = getExecutablePath("basic");
 
-    // Cross-platform output redirection
 #ifdef _WIN32
     basicCmd += " >NUL 2>&1";
 #else
@@ -389,7 +355,7 @@ TEST_F(ExampleTests, ExampleExitCodes)
 
     int basicResult = system(basicCmd.c_str());
 
-    // On Unix systems, system() returns exit code * 256, so we need to extract the real exit code
+    // On Unix system() returns the raw wait status (exit code * 256)
 #ifndef _WIN32
     if (WIFEXITED(basicResult))
     {
@@ -399,7 +365,6 @@ TEST_F(ExampleTests, ExampleExitCodes)
 
     EXPECT_LT(basicResult, 128) << "Basic example crashed with exit code: " << basicResult;
 
-    // Filter example with help should exit cleanly
     std::string filterCmd = getExecutablePath("filter");
     filterCmd += " --help";
 

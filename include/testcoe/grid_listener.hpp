@@ -13,11 +13,7 @@ namespace testcoe
 {
     /**
      * @namespace testcoe::color
-     * @brief ANSI color code definitions for terminal output
-     *
-     * This namespace contains string constants representing ANSI color and
-     * formatting codes for enhancing terminal output. These codes are used
-     * by the GridTestListener to provide colored test status output.
+     * @brief ANSI color and style codes for terminal output
      */
     namespace color
     {

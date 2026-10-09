@@ -218,12 +218,12 @@ namespace testcoe
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - m_startTime);
 
         std::stringstream time_elapsed;
-        if(duration.count() >= 3600) // hours
+        if(duration.count() >= 3600)
             time_elapsed << (duration.count() / 3600) << " hours, " << ((duration.count() % 3600) / 60) 
                          << " minutes and " << (duration.count() % 60) << " seconds";
-        else if(duration.count() >= 60) // minutes
+        else if(duration.count() >= 60)
             time_elapsed << (duration.count() / 60) << " minutes and " << (duration.count() % 60) << " seconds";
-        else // seconds
+        else
             time_elapsed << duration.count() << " seconds";
 
         printGrid();
@@ -258,7 +258,7 @@ namespace testcoe
                       << color::bold << color::red << m_failedTests << " TESTS FAILED. See details above." 
                       << color::reset << std::endl;
         }
-        else // m_failedTests == 0
+        else
         {
             std::cout << std::endl
                       << color::bold << color::green << "ALL TESTS PASSED!" << color::reset << std::endl;

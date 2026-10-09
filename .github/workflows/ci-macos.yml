@@ -19,7 +19,7 @@ jobs:
                     - name: "macOS Clang"
                       compiler: clang
                       cmake-generator: 'Ninja'
-                      cmake-options: ''
+                      cmake-options: '-DCMAKE_BUILD_TYPE=Release'
 
         steps:
         - name: Checkout repository

@@ -15,7 +15,6 @@ void printHelp()
 
 int main(int argc, char **argv)
 {
-    // Print intro message
     std::cout << "==================================================" << std::endl;
     std::cout << "  testcoe Test Filtering Example" << std::endl;
     std::cout << "==================================================" << std::endl;
@@ -24,10 +23,8 @@ int main(int argc, char **argv)
     std::cout << "You can run all tests, a specific test suite, or a single test." << std::endl;
     std::cout << std::endl;
 
-    // Initialize testcoe
     testcoe::init(&argc, argv);
 
-    // Parse command line arguments
     bool showHelp = false;
     bool runAll = true;
     std::string suiteName;
@@ -51,7 +48,6 @@ int main(int argc, char **argv)
             runAll = false;
             std::string fullTest = arg.substr(7);
 
-            // Parse "Suite.Test" format
             size_t dotPos = fullTest.find('.');
             if (dotPos != std::string::npos)
             {
@@ -61,14 +57,12 @@ int main(int argc, char **argv)
         }
     }
 
-    // Display help if requested
     if (showHelp)
     {
         printHelp();
         return 0;
     }
 
-    // Run tests based on filtering options
     if (runAll)
     {
         std::cout << "Running all tests..." << std::endl;
@@ -85,6 +79,5 @@ int main(int argc, char **argv)
         return testcoe::run_suite(suiteName);
     }
 
-    // Default: run all tests
     return testcoe::run();
 }

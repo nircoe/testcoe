@@ -3,13 +3,11 @@
 #include <chrono>
 #include <thread>
 
-// Helper function to make tests take varying amounts of time
 void delayStringTests(int milliseconds)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 }
 
-// String test suite
 TEST(StringTest, Length)
 {
     delayStringTests(200);

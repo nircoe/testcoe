@@ -10,14 +10,14 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
 endif()
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-# Find testcoe package or fetch it from GitHub
+# Find testcoe or fetch it from GitHub
     find_package(testcoe QUIET)
     if(NOT testcoe_FOUND)
         include(FetchContent)
         FetchContent_Declare(
             testcoe
             GIT_REPOSITORY https://github.com/nircoe/testcoe.git
-            GIT_TAG v0.1.0
+            GIT_TAG v0.2.0
         )
 
         set(TESTCOE_BUILD_EXAMPLES ON CACHE BOOL "Disable testcoe examples" FORCE)
@@ -27,10 +27,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     endif()
 endif()
 
-# Note: You don't need to find or fetch GTest separately
-# because testcoe already includes and links against it.
+# testcoe already brings GTest, no need to find or fetch it.
 
-# Add the executable
 add_executable(crash_example
     main.cpp
     crash_tests.cpp
@@ -38,33 +36,26 @@ add_executable(crash_example
 
 copy_mingw_dlls_to_target(crash_example)
 
-# Link against testcoe
 target_link_libraries(crash_example
     PRIVATE
         testcoe
 )
 
-# Add custom targets for running specific crash tests
 add_custom_target(run_crash_example
     COMMAND crash_example
     DEPENDS crash_example
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# Helper function to create targets for each crash test
-function(add_crash_test test_name)
+function(add_crash_test test_name flag)
     add_custom_target(run_crash_example_${test_name}
-        COMMAND crash_example --gtest_filter=CrashTests.${test_name}
+        COMMAND crash_example ${flag}
         DEPENDS crash_example
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 endfunction()
 
-# Add targets for each crash test
-add_crash_test(SegmentationFault)
-add_crash_test(DivideByZero)
-add_crash_test(Abort)
-add_crash_test(AbortDeathTest)
-add_crash_test(StackOverflow)
-add_crash_test(OutOfBounds)
-add_crash_test(StreamRedirection)
+add_crash_test(SegmentationFault --run-segfault)
+add_crash_test(DivideByZero --run-divbyzero)
+add_crash_test(Abort --run-abort)
+add_crash_test(AbortDeathTest --run-death-test)

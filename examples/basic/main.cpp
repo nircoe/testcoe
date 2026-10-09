@@ -12,9 +12,8 @@ int main(int argc, char **argv)
     std::cout << "enhanced crash reporting." << std::endl;
     std::cout << std::endl;
 
-    // Initialize testcoe (replaces Google Test initialization)
+    // Replaces testing::InitGoogleTest()
     testcoe::init(&argc, argv);
 
-    // Run all tests
     return testcoe::run();
 }

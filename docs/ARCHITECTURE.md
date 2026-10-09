@@ -2,7 +2,8 @@
 
 ## Overview
 
-testcoe enhances Google Test by intercepting test events and providing visual feedback. It consists of several modular components working together.
+testcoe enhances Google Test by intercepting test events and providing visual feedback.
+It consists of several modular components working together.
 
 ## Component Architecture
 
@@ -46,7 +47,9 @@ testcoe enhances Google Test by intercepting test events and providing visual fe
 - **Purpose**: Implements Google Test event listener for visual grid display
 - **Key Features**:
   - Tracks test execution state
-  - Updates terminal display in real-time on interactive terminals; when output is piped or redirected (e.g. CI logs), redraws only once, in the final summary, to avoid duplicate frames
+  - Updates terminal display in real-time on interactive terminals
+  - When output is piped or redirected (e.g. CI logs), redraws only once, in the final summary,
+    to avoid duplicate frames
   - Collects and displays failure information
   - Shows execution time statistics
 
@@ -129,4 +132,4 @@ testcoe enhances Google Test by intercepting test events and providing visual fe
 1. **Event Listener Pattern**: Uses Google Test's event listener interface for non-invasive integration
 2. **Stream Redirection**: Temporarily redirects stdout/stderr during test execution to control output
 3. **Cross-platform Abstraction**: Platform-specific code isolated in dedicated sections
-4. **Header-only Public API**: Simple integration with single include
+4. **Static library**: Link the `testcoe` target and include `<testcoe.hpp>`

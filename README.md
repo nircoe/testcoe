@@ -33,7 +33,7 @@ include(FetchContent)
 FetchContent_Declare(
     testcoe
     GIT_REPOSITORY https://github.com/nircoe/testcoe.git
-    GIT_TAG v0.1.0
+    GIT_TAG v0.2.0
 )
 FetchContent_MakeAvailable(testcoe)
 
@@ -51,15 +51,16 @@ int main(int argc, char** argv) {
 }
 ```
 
-That's it! Run your tests and see the enhanced output.
+Run your tests and see the enhanced output.
 
 ## Features
 
-- **Grid Visualization** - Real-time progress on interactive terminals; a single, duplication-free summary when output is piped or redirected (e.g. CI logs)
-- **Crash Handling** - Get stack traces when tests crash
-- **Color Support** - Automatic terminal detection
-- **Test Filtering** - Run specific tests or suites
-- **Zero Config** - Works out of the box with Google Test
+- Grid visualization: real-time progress on interactive terminals. When output is piped or redirected
+  (e.g. CI logs), a single summary is printed instead.
+- Crash handling: stack traces when tests crash
+- Color support: automatic terminal detection
+- Test filtering: run specific tests or suites
+- Zero config: works out of the box with Google Test
 
 ## Examples
 
@@ -84,8 +85,17 @@ See the [examples/](examples/) directory for demonstrations:
 // Initialize testcoe
 testcoe::init(&argc, argv);
 
+// Initialize without arguments (uses Google Test's own init)
+testcoe::init();
+
+// Check if testcoe was initialized
+testcoe::isInitialized();
+
 // Run all tests
 testcoe::run();
+
+// Run tests matching a Google Test filter string
+testcoe::run("MathTests.*");
 
 // Run specific suite
 testcoe::run_suite("MathTests");

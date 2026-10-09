@@ -5,7 +5,6 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
-// Windows-specific includes for SEH and better stack traces
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -17,19 +16,15 @@ namespace testcoe
     std::streambuf *g_originalCerrBuf = nullptr;
 
 #ifdef _WIN32
-    // Windows structured exception handler for better crash detection
     LONG WINAPI windowsExceptionHandler(EXCEPTION_POINTERS *pExceptionPtrs)
     {
-        // Immediate debug output to see if we even get here
         OutputDebugStringA("Windows exception handler called\n");
 
-        // Restore streams first
         if (g_originalCoutBuf)
             std::cout.rdbuf(g_originalCoutBuf);
         if (g_originalCerrBuf)
             std::cerr.rdbuf(g_originalCerrBuf);
 
-        // Flush any pending output first
         std::cout.flush();
         std::cerr.flush();
 
@@ -37,7 +32,6 @@ namespace testcoe
                   << std::endl
                   << "====== TEST TERMINATED BY EXCEPTION ======" << std::endl;
 
-        // Validate exception pointer before using it
         if (!pExceptionPtrs || !pExceptionPtrs->ExceptionRecord)
         {
             std::cerr << "Invalid exception pointer!" << std::endl;
@@ -46,12 +40,10 @@ namespace testcoe
             return EXCEPTION_EXECUTE_HANDLER;
         }
 
-        // Store exception code safely
         DWORD exceptionCode = pExceptionPtrs->ExceptionRecord->ExceptionCode;
 
         std::cerr << "Windows Exception Code: 0x" << std::hex << exceptionCode << std::dec;
 
-        // Translate common Windows exceptions to readable messages
         switch (exceptionCode)
         {
         case EXCEPTION_ACCESS_VIOLATION:
@@ -87,14 +79,12 @@ namespace testcoe
                   << "===== END OF CRASH REPORT =====" << std::endl
                   << std::endl;
 
-        // Ensure all output is flushed before terminating
         std::cerr.flush();
         std::cout.flush();
 
-        // Give the console time to process the output
-        Sleep(500); // Increased delay
+        // give the console time to show the output
+        Sleep(500);
 
-        // Terminate the process
         ExitProcess(1);
         return EXCEPTION_EXECUTE_HANDLER;
     }
@@ -180,7 +170,6 @@ namespace testcoe
     void setupStackTraceEnhancements()
     {
 #ifdef _WIN32
-        // Install Windows structured exception handler
         SetUnhandledExceptionFilter(windowsExceptionHandler);
 
         std::cout << "Windows stack trace enhancements enabled." << std::endl;

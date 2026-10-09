@@ -1,11 +1,6 @@
 /**
  * @namespace testcoe
- * @brief Test Console Output Enhancement library
- *
- * The testcoe namespace contains all functionality related to enhancing
- * the test output experience when using Google Test. It provides visual
- * grid-based test progress display, and signal handling for crashes
- * with detailed stack traces.
+ * @brief Grid view of test progress and crash stack traces for Google Test
  */
 
 #pragma once

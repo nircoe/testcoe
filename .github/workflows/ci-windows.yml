@@ -24,19 +24,13 @@ jobs:
                     - name: "Windows MinGW"
                       compiler: gcc
                       cmake-generator: 'MinGW Makefiles'
-                      cmake-options: '-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++'
+                      cmake-options: '-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release'
 
         steps:
         - name: Checkout repository
           uses: actions/checkout@v7
           with:
             submodules: 'recursive'
-
-        - name: Install Windows build tools
-          if: matrix.compiler != 'msvc'
-          run: |
-            choco install mingw
-          shell: bash
 
         - name: Setup MSVC dev environment
           if: matrix.compiler == 'msvc'
