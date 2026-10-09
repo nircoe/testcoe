@@ -23,8 +23,8 @@ class CrashTests : public ::testing::Test
 // Named, non-inlined, externally-linked so the crash backend can resolve a symbol for it
 TESTCOE_CRASH_NOINLINE void testcoeCrashExampleNullWrite()
 {
-    // The pointer itself is volatile, or GCC -O2 sees a known null write and drops the call
-    int *volatile nullPtr = nullptr;
+    // Both the pointer and the write are volatile, or GCC -O2 sees a known null write and drops the call
+    volatile int *volatile nullPtr = nullptr;
     *nullPtr = 42; // testcoe-crash-site
 }
 
