@@ -1,6 +1,7 @@
 # testcoe Crash Handling Example
 
-This example demonstrates testcoe's crash handling capabilities, showing how it detects crashes and provides detailed stack traces.
+This example demonstrates testcoe's crash handling capabilities, showing how it detects crashes and provides
+detailed stack traces.
 
 ## Files
 
@@ -19,19 +20,27 @@ cmake --build .
 
 ## How to Run
 
-By default, all crash-causing tests are skipped to prevent unintentional crashes:
+By default only the non-crashing `BasicTests` run. The `CrashTests` suite is excluded:
 
 ```bash
-# Run the example with all tests (non-crashing)
 ./examples/crash/crash_example
 ```
 
-To run a specific crash test, use the Google Test filter mechanism:
+To run crash tests, pass one of these flags as the first argument. `--gtest_filter` has no effect here,
+because `main.cpp` always runs with its own filter.
+
+- `--run-segfault` - `CrashTests.SegmentationFault`
+- `--run-abort` - `CrashTests.Abort`
+- `--run-divbyzero` - `CrashTests.DivideByZero`
+- `--run-crash-suite` - the whole `CrashTests` suite
+- `--run-death-test` - `CrashTests.AbortDeathTest`
 
 ```bash
 # Run only the segmentation fault test
-./examples/crash/crash_example --gtest_filter=CrashTests.SegmentationFault
+./examples/crash/crash_example --run-segfault
 ```
+
+The process ends at the first crash, so `--run-crash-suite` stops at `SegmentationFault`.
 
 Or use the provided CMake targets:
 
@@ -39,6 +48,9 @@ Or use the provided CMake targets:
 # Run only the divide by zero test
 cmake --build . --target run_crash_example_DivideByZero
 ```
+
+The targets are `run_crash_example_SegmentationFault`, `run_crash_example_DivideByZero`,
+`run_crash_example_Abort` and `run_crash_example_AbortDeathTest`.
 
 ## Available Crash Tests
 
@@ -48,7 +60,10 @@ cmake --build . --target run_crash_example_DivideByZero
 - `StackOverflow` - Demonstrates handling of stack overflow
 - `OutOfBounds` - Demonstrates handling of out-of-bounds access
 - `StreamRedirection` - Demonstrates handling of crashes with redirected streams
-- `AbortDeathTest` - Regression test for gtest's `EXPECT_DEATH` under testcoe (always runs, never skipped)
+- `AbortDeathTest` - Regression test for gtest's `EXPECT_DEATH` under testcoe (never skipped, only runs with
+  `--run-death-test`)
+
+`StackOverflow`, `OutOfBounds` and `StreamRedirection` skip themselves with `GTEST_SKIP()` and have no flag yet.
 
 ## Death Test Regression Check
 
@@ -62,11 +77,11 @@ Unlike the crash tests above, `AbortDeathTest` doesn't crash the whole binary. I
 Guards against a signal-handler/death-test collision on Windows: testcoe must not intercept the
 child's abort before gtest's own death-test protocol can observe it.
 
-## Enabling a Crash Test
+## Running a Test Without a Flag
 
-To enable a crash test, edit `crash_tests.cpp` and:
-1. Comment out the `GTEST_SKIP()` line in the test you want to run
-2. Uncomment the crash-causing code
+To run `StackOverflow`, `OutOfBounds` or `StreamRedirection`:
+1. Remove the `GTEST_SKIP()` line in the test in `crash_tests.cpp`
+2. Call `testcoe::run_test("CrashTests", "<Name>")` from `main.cpp`
 
 ## Key Points
 

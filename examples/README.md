@@ -3,7 +3,7 @@
 Examples demonstrating testcoe usage:
 
 - `basic/` - Grid visualization with multiple test files
-- `crash/` - Crash handling and stack traces  
+- `crash/` - Crash handling and stack traces
 - `filter/` - Running specific tests or suites
 
 ## Quick Start

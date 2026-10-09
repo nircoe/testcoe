@@ -1,6 +1,7 @@
 # testcoe Test Filtering Example
 
-This example demonstrates how to use testcoe's test filtering capabilities to run specific test suites or individual tests.
+This example demonstrates how to use testcoe's test filtering capabilities to run specific test suites or
+individual tests.
 
 ## Files
 

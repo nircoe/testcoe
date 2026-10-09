@@ -26,7 +26,7 @@ When fetching testcoe from another CMake project, set the same options with
 ### Running Tests
 
 ```bash
-# Run unit tests
+# Run the integration tests
 ./tests/testcoe_tests
 
 # Run examples
@@ -39,11 +39,13 @@ When fetching testcoe from another CMake project, set the same options with
 
 ```
 testcoe/
-├── include/testcoe/     # Public headers
-├── src/                 # Implementation files
-├── examples/            # Example programs
-├── tests/              # Integration and unit tests
-└── .github/workflows/  # CI configuration
+├── cmake/                # CMake helpers
+├── docs/                 # Architecture, contributing and roadmap
+├── include/testcoe/      # Public headers
+├── src/                  # Implementation files
+├── examples/             # Example programs
+├── tests/                # Integration tests (they run the example binaries)
+└── .github/workflows/    # CI configuration
 ```
 
 ## Continuous Integration
@@ -51,7 +53,7 @@ testcoe/
 All pull requests are automatically tested on:
 
 - **Windows**: MSVC and MinGW
-- **Linux**: GCC and Clang  
+- **Linux**: GCC and Clang
 - **macOS**: Apple Clang
 
 ### CI Pipeline Details
@@ -59,8 +61,7 @@ All pull requests are automatically tested on:
 The CI runs the following checks:
 1. Build the library
 2. Build all examples
-3. Run integration tests
-4. Verify examples execute correctly
+3. Run the integration tests (they run the example binaries)
 
 ## Making Changes
 
@@ -91,7 +92,7 @@ The CI runs the following checks:
 ### Commit Messages
 - Use prefix for PR title `[Subject]: <PR title>`
 - PR description should describe the major changes in bullet-points
-- Sqaushed commit title should be the PR title, and the message should be PR description
+- Squashed commit title should be the PR title, and the message should be PR description
 
 ## Adding New Features
 
@@ -105,8 +106,6 @@ When adding features:
 ## Questions?
 
 Feel free to reach out at nircoe@gmail.com
-
-I'm here to help make contributing to testcoe as smooth as possible!
 
 Please open an issue for:
 - Bug reports

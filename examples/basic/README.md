@@ -33,12 +33,15 @@ cmake --build . --target run_basic_example
 
 1. testcoe is initialized with `testcoe::init(&argc, argv)`, replacing the usual Google Test initialization.
 2. Tests are run with `testcoe::run()`, replacing the usual `RUN_ALL_TESTS()`.
-3. The grid visualization shows all test suites and their status in real-time when run in an interactive terminal; when output is piped or redirected (e.g. `./basic_example | cat`, or a CI log), only the final grid and summary are printed once.
+3. The grid visualization shows all test suites and their status in real-time when run in an interactive terminal.
+   When output is piped or redirected (e.g. `./basic_example | cat`, or a CI log), only the final grid and summary
+   are printed once.
 4. An intentional failure is included to demonstrate how failures are displayed.
 
 ## Expected Output
 
-You should see a grid display showing the progress of all test suites (MathTest, StringTest, VectorTest) with color-coded status indicators:
+You should see a grid display showing the progress of all test suites (MathTest, StringTest, VectorTest)
+with color-coded status indicators:
 - `.` - Not run yet
 - `R` - Currently running
 - `P` - Passed
