@@ -35,7 +35,7 @@ add_custom_target(build_all_examples
         filter_example
 )
 
-# Add a target to run basic examples (those that don't crash)
+# Only the examples that don't crash
 add_custom_target(run_all_examples
     DEPENDS
         run_filter_example

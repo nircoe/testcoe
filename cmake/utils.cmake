@@ -1,17 +1,12 @@
-# Automatically copies required MinGW DLLs to target directory on Windows
-
 function(copy_mingw_dlls_to_target target_name)
     if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         message(STATUS "[testcoe] Setting up automatic MinGW DLL copying for ${target_name}")
         
-        # Get the compiler directory
         get_filename_component(COMPILER_DIR ${CMAKE_CXX_COMPILER} DIRECTORY)
         
-        # Also check the parent bin directory (common in MinGW installations)
         get_filename_component(MINGW_ROOT ${COMPILER_DIR} DIRECTORY)
         set(MINGW_BIN_DIR "${MINGW_ROOT}/bin")
         
-        # List of DLLs that might be needed for MinGW
         set(MINGW_DLLS
             libgcc_s_seh-1.dll     # 64-bit SEH exception handling
             libgcc_s_dw2-1.dll     # 32-bit Dwarf2 exception handling
@@ -20,7 +15,6 @@ function(copy_mingw_dlls_to_target target_name)
             libgomp-1.dll          # OpenMP support (sometimes needed)
         )
         
-        # Search paths for DLLs
         set(SEARCH_PATHS 
             ${COMPILER_DIR}
             ${MINGW_BIN_DIR}
@@ -49,8 +43,6 @@ function(copy_mingw_dlls_to_target target_name)
             endif()
         endforeach()
         
-        # Also copy any DLLs that are in the same directory as the compiler
-        # This is a more comprehensive approach
         message(STATUS "[testcoe] Adding compiler directory to PATH for runtime: ${COMPILER_DIR}")
         
         # Create a batch file that sets the PATH and runs the executable
@@ -62,7 +54,6 @@ function(copy_mingw_dlls_to_target target_name)
     endif()
 endfunction()
 
-# Alternative function for multiple targets
 function(copy_mingw_dlls_to_targets)
     foreach(target_name ${ARGN})
         copy_mingw_dlls_to_target(${target_name})

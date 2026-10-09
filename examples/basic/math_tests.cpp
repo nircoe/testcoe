@@ -2,13 +2,11 @@
 #include <chrono>
 #include <thread>
 
-// Helper function to make tests take varying amounts of time
 void delayExecution(int milliseconds)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 }
 
-// Basic math test suite
 TEST(MathTest, Addition)
 {
     delayExecution(100);
@@ -33,7 +31,6 @@ TEST(MathTest, Division)
     EXPECT_EQ(10 / 2, 5);
 }
 
-// Add an intentional failure to demonstrate failure reporting
 TEST(MathTest, IntentionalFail)
 {
     delayExecution(130);

@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-# Find testcoe package or fetch it from GitHub
+# Find testcoe or fetch it from GitHub
     find_package(testcoe QUIET)
     if(NOT testcoe_FOUND)
         include(FetchContent)
@@ -22,10 +22,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
         FetchContent_MakeAvailable(testcoe)
     endif()
 endif()
-# Note: You don't need to find or fetch GTest separately
-# because testcoe already includes and links against it.
+# testcoe already brings GTest, no need to find or fetch it.
 
-# Add the executable
 add_executable(filter_example
     main.cpp
     test_suites.cpp
@@ -33,13 +31,11 @@ add_executable(filter_example
 
 copy_mingw_dlls_to_target(filter_example)
 
-# Link against testcoe
 target_link_libraries(filter_example
     PRIVATE
         testcoe
 )
 
-# Add custom targets for running the example in different ways
 add_custom_target(run_filter_example
     COMMAND filter_example --all
     DEPENDS filter_example
@@ -52,7 +48,6 @@ add_custom_target(run_filter_example_help
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# Run with a specific suite
 foreach(SUITE MathSuite StringSuite VectorSuite)
     add_custom_target(run_filter_example_suite_${SUITE}
         COMMAND filter_example --suite=${SUITE}
@@ -61,7 +56,6 @@ foreach(SUITE MathSuite StringSuite VectorSuite)
     )
 endforeach()
 
-# Run some specific test examples
 add_custom_target(run_filter_example_test_math_addition
     COMMAND filter_example --test=MathSuite.Addition
     DEPENDS filter_example

@@ -4,7 +4,7 @@
 #include <iostream>
 
 //==============================================================================
-// MathSuite - Basic mathematical operations
+// MathSuite (basic math operations)
 //==============================================================================
 
 TEST(MathSuite, Addition)
@@ -32,7 +32,7 @@ TEST(MathSuite, Division)
 }
 
 //==============================================================================
-// StringSuite - String operations
+// StringSuite (string operations)
 //==============================================================================
 
 TEST(StringSuite, Length)
@@ -54,7 +54,7 @@ TEST(StringSuite, Comparison)
 }
 
 //==============================================================================
-// VectorSuite - Vector operations
+// VectorSuite (vector operations)
 //==============================================================================
 
 TEST(VectorSuite, Size)

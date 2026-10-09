@@ -19,10 +19,8 @@ int main(int argc, char **argv)
     std::cout << "--run-crash-suite or --run-death-test" << std::endl;
     std::cout << std::endl;
 
-    // Initialize testcoe
     testcoe::init(&argc, argv);
 
-    // Run tests
     if (argc > 1)
     {
         std::string arg = argv[1];

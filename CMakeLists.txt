@@ -7,14 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(MSVC)
-    # Ensure debug symbols are generated and linked
     add_compile_options(/Z7)
     add_link_options(/DEBUG)
-    # Keep debug info in release builds too for stack traces
+    # Release builds keep debug info too, stack traces need it
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Z7")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # Enhanced debug info for GCC/Clang
     add_compile_options(-g3 -fno-omit-frame-pointer)
 endif()
 
@@ -22,7 +20,6 @@ include(cmake/utils.cmake)
 include(cmake/stacktrace.cmake)
 include(cmake/config_header.cmake)
 
-# googletest
 message(STATUS "[testcoe] Fetching GoogleTest v1.16.0")
 include(FetchContent)
 FetchContent_Declare(
@@ -38,7 +35,6 @@ ignore_external_warnings(gtest_main)
 testcoe_detect_stacktrace()
 generate_testcoe_config_header()
 
-# testcoe
 add_subdirectory(include)
 add_subdirectory(src)
 

@@ -10,7 +10,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
 endif()
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-# Find testcoe package or fetch it from GitHub
+# Find testcoe or fetch it from GitHub
     find_package(testcoe QUIET)
     if(NOT testcoe_FOUND)
         include(FetchContent)
@@ -27,10 +27,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     endif()
 endif()
 
-# Note: You don't need to find or fetch GTest separately
-# because testcoe already includes and links against it.
+# testcoe already brings GTest, no need to find or fetch it.
 
-# Add the executable
 add_executable(crash_example
     main.cpp
     crash_tests.cpp
@@ -38,20 +36,17 @@ add_executable(crash_example
 
 copy_mingw_dlls_to_target(crash_example)
 
-# Link against testcoe
 target_link_libraries(crash_example
     PRIVATE
         testcoe
 )
 
-# Add custom targets for running specific crash tests
 add_custom_target(run_crash_example
     COMMAND crash_example
     DEPENDS crash_example
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# Helper function to create targets for each crash test
 function(add_crash_test test_name flag)
     add_custom_target(run_crash_example_${test_name}
         COMMAND crash_example ${flag}
@@ -60,7 +55,6 @@ function(add_crash_test test_name flag)
     )
 endfunction()
 
-# Add targets for each crash test
 add_crash_test(SegmentationFault --run-segfault)
 add_crash_test(DivideByZero --run-divbyzero)
 add_crash_test(Abort --run-abort)

@@ -1,17 +1,15 @@
 cmake_minimum_required(VERSION 3.14)
 
 
-# Create test executable for example integration tests only
 add_executable(testcoe_tests
     examples_integration_tests.cpp
 )
 
 copy_mingw_dlls_to_target(testcoe_tests)
 
-# Link ONLY with Google Test - we're testing by running examples as separate processes
+# Link ONLY with Google Test, the tests run the examples as separate processes
 target_link_libraries(testcoe_tests PRIVATE gtest_main gtest)
 
-# Make sure examples are built before running tests
 add_dependencies(testcoe_tests basic_example crash_example filter_example)
 
 target_compile_definitions(testcoe_tests
@@ -20,14 +18,12 @@ target_compile_definitions(testcoe_tests
         TESTCOE_TEST_EXPECT_FUNCTION_NAMES=$<NOT:${TESTCOE_STACKTRACE_BACKEND_NONE}>
 )
 
-# Compiler flags
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(testcoe_tests PRIVATE -Wall -Wextra -Werror)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(testcoe_tests PRIVATE /W3 /WX)
 endif()
 
-# Target to run tests
 add_custom_target(run_tests
     COMMAND testcoe_tests
     DEPENDS testcoe_tests
@@ -35,7 +31,6 @@ add_custom_target(run_tests
     COMMENT "Running testcoe example integration tests"
 )
 
-# Target to run tests, including any tests disabled for reasons other than crashing
 add_custom_target(run_all_tests
     COMMAND testcoe_tests --gtest_also_run_disabled_tests
     DEPENDS testcoe_tests
