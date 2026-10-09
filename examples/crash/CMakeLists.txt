@@ -52,19 +52,16 @@ add_custom_target(run_crash_example
 )
 
 # Helper function to create targets for each crash test
-function(add_crash_test test_name)
+function(add_crash_test test_name flag)
     add_custom_target(run_crash_example_${test_name}
-        COMMAND crash_example --gtest_filter=CrashTests.${test_name}
+        COMMAND crash_example ${flag}
         DEPENDS crash_example
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 endfunction()
 
 # Add targets for each crash test
-add_crash_test(SegmentationFault)
-add_crash_test(DivideByZero)
-add_crash_test(Abort)
-add_crash_test(AbortDeathTest)
-add_crash_test(StackOverflow)
-add_crash_test(OutOfBounds)
-add_crash_test(StreamRedirection)
+add_crash_test(SegmentationFault --run-segfault)
+add_crash_test(DivideByZero --run-divbyzero)
+add_crash_test(Abort --run-abort)
+add_crash_test(AbortDeathTest --run-death-test)

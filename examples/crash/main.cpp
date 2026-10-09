@@ -15,7 +15,8 @@ int main(int argc, char **argv)
     std::cout << "  - Provide helpful debugging information" << std::endl;
     std::cout << std::endl;
     std::cout << "IMPORTANT: By default, all crash tests are skipped." << std::endl;
-    std::cout << "To run a specific crash test, use: --gtest_filter=CrashTests.Name" << std::endl;
+    std::cout << "To run one, pass --run-segfault, --run-abort, --run-divbyzero," << std::endl;
+    std::cout << "--run-crash-suite or --run-death-test" << std::endl;
     std::cout << std::endl;
 
     // Initialize testcoe
@@ -54,7 +55,4 @@ int main(int argc, char **argv)
     }
 
     return testcoe::run("-CrashTests.*");
-
-    // TODO: add specific test run, and why do they say "by default all crash tests are skipped"?? 
-    // you don't really do anything with the --gtest_filter flag, and we should call it "--run-test"
 }
