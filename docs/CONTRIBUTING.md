@@ -3,7 +3,7 @@
 ## Development Setup
 
 ### Prerequisites
-- CMake 3.14+
+- CMake 3.22+
 - C++23 compatible compiler
 
 ### Building from Source
