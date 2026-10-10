@@ -72,7 +72,7 @@ See the [examples/](examples/) directory for demonstrations:
 ## Requirements
 
 - C++23 or later
-- CMake 3.14+
+- CMake 3.22+
 - Google Test (automatically included)
 - Stack traces use `std::stacktrace` where the toolchain supports it (GCC 13+, MSVC), or
   `<execinfo.h>` otherwise (macOS).
