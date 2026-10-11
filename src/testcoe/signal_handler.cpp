@@ -37,7 +37,6 @@ namespace testcoe
             std::cerr << "Invalid exception pointer!" << std::endl;
             std::cerr.flush();
             ExitProcess(1);
-            return EXCEPTION_EXECUTE_HANDLER;
         }
 
         DWORD exceptionCode = pExceptionPtrs->ExceptionRecord->ExceptionCode;
@@ -86,7 +85,6 @@ namespace testcoe
         Sleep(500);
 
         ExitProcess(1);
-        return EXCEPTION_EXECUTE_HANDLER;
     }
 #else
     namespace internal
