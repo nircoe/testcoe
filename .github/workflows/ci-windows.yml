@@ -29,8 +29,6 @@ jobs:
         steps:
         - name: Checkout repository
           uses: actions/checkout@v7
-          with:
-            submodules: 'recursive'
 
         - name: Setup MSVC dev environment
           if: matrix.compiler == 'msvc'
@@ -44,7 +42,7 @@ jobs:
 
         - name: Build
           run: |
-            cmake --build build --config Release
+            cmake --build build --parallel
           shell: bash
         
         - name: Run tests

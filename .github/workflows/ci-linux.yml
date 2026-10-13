@@ -29,15 +29,7 @@ jobs:
         steps:
         - name: Checkout repository
           uses: actions/checkout@v7
-          with:
-            submodules: 'recursive'
 
-        - name: Install ninja-build
-          run: |
-            sudo apt-get update
-            sudo apt-get install -y ninja-build
-          shell: bash
-        
         - name: Configure CMake
           run: |
             cmake -B build -G "${{ matrix.cmake-generator }}" ${{ matrix.cmake-options }} -DTESTCOE_BUILD_EXAMPLES=ON -DTESTCOE_BUILD_TESTS=ON
@@ -45,7 +37,7 @@ jobs:
 
         - name: Build
           run: |
-            cmake --build build --config Release
+            cmake --build build --parallel
           shell: bash
         
         - name: Run tests
