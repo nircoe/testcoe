@@ -1,4 +1,4 @@
-function(generate_testcoe_config_header)
+function(testcoe_generate_config_header)
     set(TESTCOE_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/config")
     set(TESTCOE_CONFIG_DIR ${TESTCOE_CONFIG_DIR} PARENT_SCOPE)
 

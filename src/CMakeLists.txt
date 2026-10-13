@@ -19,11 +19,7 @@ target_include_directories(testcoe
         ${TESTCOE_CONFIG_DIR}
 )
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(testcoe PRIVATE -Wall -Wextra -Werror)
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(testcoe PRIVATE /W3 /WX)
-endif()
+testcoe_enable_strict_warnings(testcoe)
 
 if(TESTCOE_STACKTRACE_BACKEND STREQUAL "execinfo")
     target_link_options(testcoe INTERFACE -rdynamic)
