@@ -71,7 +71,7 @@ See the [examples/](examples/) directory for demonstrations:
 
 ## Requirements
 
-- C++23 or later
+- C++23 or later. Linking `testcoe` raises your target to C++23 if it is set lower.
 - CMake 3.22+
 - Google Test (automatically included)
 - Stack traces use `std::stacktrace` where the toolchain supports it (GCC 13+, MSVC), or
