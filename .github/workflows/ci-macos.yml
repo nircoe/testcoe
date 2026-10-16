@@ -12,6 +12,8 @@ jobs:
         name: ${{ matrix.name }}
         runs-on: macos-latest
         if: github.event.pull_request.draft == false || github.event_name == 'push'
+        env:
+            CACHE_CMAKE_OPTIONS: '-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
         strategy:
             fail-fast: false
             matrix:
@@ -24,22 +26,23 @@ jobs:
         steps:
         - name: Checkout repository
           uses: actions/checkout@v7
-          with:
-            submodules: 'recursive'
 
-        - name: Install ninja-build
-          run: |
-            brew install ninja
-          shell: bash
-        
+        - name: Setup ccache
+          uses: hendrikmuhs/ccache-action@v1.2
+          with:
+            key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{
+              hashFiles('cmake/googletest.cmake', 'tests/CMakeLists.txt') }}
+            restore-keys: ccache-${{ runner.os }}-${{ matrix.compiler }}-
+
         - name: Configure CMake
           run: |
-            cmake -B build -G "${{ matrix.cmake-generator }}" ${{ matrix.cmake-options }} -DTESTCOE_BUILD_EXAMPLES=ON -DTESTCOE_BUILD_TESTS=ON
+            cmake -B build -G "${{ matrix.cmake-generator }}" ${{ matrix.cmake-options }} \
+                ${{ env.CACHE_CMAKE_OPTIONS }} -DTESTCOE_BUILD_EXAMPLES=ON -DTESTCOE_BUILD_TESTS=ON
           shell: bash
 
         - name: Build
           run: |
-            cmake --build build --config Release
+            cmake --build build --parallel
           shell: bash
         
         - name: Run tests
