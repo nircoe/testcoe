@@ -5,6 +5,11 @@ target_include_directories(testcoe_headers
         $<INSTALL_INTERFACE:include>
 )
 
+target_compile_features(testcoe_headers
+    INTERFACE
+        cxx_std_23
+)
+
 install(
     DIRECTORY testcoe
     DESTINATION include
