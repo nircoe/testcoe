@@ -3,7 +3,7 @@
 #include <testcoe/terminal_utils.hpp>
 #include <algorithm>
 
-namespace testcoe 
+namespace testcoe
 {
     namespace color
     {
@@ -20,40 +20,36 @@ namespace testcoe
     {
         testcoe::terminal::clear();
         std::cout << color::bold << "Running " << m_totalTests << " tests... "
-                  << "Completed: " << m_completedTests << "/" << m_totalTests
-                  << " (P: " << m_passedTests << ", F: " << m_failedTests << ")"
-                  << color::reset << "\n";
+                  << "Completed: " << m_completedTests << "/" << m_totalTests << " (P: " << m_passedTests
+                  << ", F: " << m_failedTests << ")" << color::reset << "\n";
 
-        std::cout << color::green << "P" << color::reset << " - Passed, "
-                  << color::red << "F" << color::reset << " - Failed, "
-                  << color::yellow << "R" << color::reset << " - Running, "
+        std::cout << color::green << "P" << color::reset << " - Passed, " << color::red << "F" << color::reset
+                  << " - Failed, " << color::yellow << "R" << color::reset << " - Running, "
                   << ". - Not run yet\n\n";
 
         std::size_t maxNameLength = 0;
-        if(!m_suiteTestStatus.empty())
+        if (!m_suiteTestStatus.empty())
         {
-            maxNameLength = std::max_element(m_suiteTestStatus.begin(), m_suiteTestStatus.end(),
-                                            [](const auto &a, const auto &b)
-                                            {
-                                                return a.first.length() < b.first.length();
-                                            })->first.length();
+            maxNameLength =
+                std::max_element(m_suiteTestStatus.begin(), m_suiteTestStatus.end(),
+                                 [](const auto &a, const auto &b) { return a.first.length() < b.first.length(); })
+                    ->first.length();
         }
 
-        for(const auto &suite : m_suiteTestStatus)
+        for (const auto &suite : m_suiteTestStatus)
         {
             std::string suiteName = suite.first;
             const auto &statuses = suite.second;
-            
+
             std::cout << std::setw(maxNameLength) << std::left << suiteName << " ";
 
             int completedFromSuite = 0;
-            for(const auto& status : statuses)
+            for (const auto &status : statuses)
             {
-                if(status == TestStatus::Passed || status == TestStatus::Failed)
-                    ++completedFromSuite;
+                if (status == TestStatus::Passed || status == TestStatus::Failed) ++completedFromSuite;
 
                 std::string color;
-                switch(status)
+                switch (status)
                 {
                     case TestStatus::NotRun:
                         color = color::reset;
@@ -78,13 +74,11 @@ namespace testcoe
         }
     }
 
-    GridTestListener::GridTestListener(testing::TestEventListener *listener) :
-        m_originalListener(listener), m_interactive(terminal::isInteractive()),
-        m_totalTests(0), m_completedTests(0), m_passedTests(0), m_failedTests(0),
-        m_originalCoutBuf(std::cout.rdbuf()), m_originalCerrBuf(std::cerr.rdbuf())
+    GridTestListener::GridTestListener(testing::TestEventListener *listener)
+        : m_originalListener(listener), m_interactive(terminal::isInteractive()), m_totalTests(0), m_completedTests(0),
+          m_passedTests(0), m_failedTests(0), m_originalCoutBuf(std::cout.rdbuf()), m_originalCerrBuf(std::cerr.rdbuf())
     {
-        if (!listener)
-            throw std::invalid_argument("Null listener passed to GridTestListener constructor");
+        if (!listener) throw std::invalid_argument("Null listener passed to GridTestListener constructor");
 
         m_startTime = std::chrono::high_resolution_clock::now();
         g_originalCoutBuf = m_originalCoutBuf;
@@ -119,11 +113,9 @@ namespace testcoe
             }
         }
 
-        std::cout << color::bold << "Running " << m_totalTests << " tests..." << std::endl
-                  << color::reset;
+        std::cout << color::bold << "Running " << m_totalTests << " tests..." << std::endl << color::reset;
 
-        if (m_interactive)
-            printGrid();
+        if (m_interactive) printGrid();
 
         std::cout.rdbuf(m_nullStream.rdbuf());
         std::cerr.rdbuf(m_nullStream.rdbuf());
@@ -139,7 +131,7 @@ namespace testcoe
     {
         m_currentTestSuite = testSuite.name();
 
-        if(m_suiteTestStatus.find(m_currentTestSuite) == m_suiteTestStatus.end())
+        if (m_suiteTestStatus.find(m_currentTestSuite) == m_suiteTestStatus.end())
         {
             // should not happen, just in case.
             m_suiteTestStatus[m_currentTestSuite] = std::vector<TestStatus>();
@@ -158,7 +150,7 @@ namespace testcoe
         m_currentOutput.clear();
 
         int testIndex = m_currentTestIndex[m_currentTestSuite];
-        if(0 <= testIndex && testIndex < static_cast<int>(m_suiteTestStatus[m_currentTestSuite].size()))
+        if (0 <= testIndex && testIndex < static_cast<int>(m_suiteTestStatus[m_currentTestSuite].size()))
             m_suiteTestStatus[m_currentTestSuite][testIndex] = TestStatus::Running;
 
         if (m_interactive)
@@ -171,9 +163,9 @@ namespace testcoe
 
     void GridTestListener::OnTestPartResult(const testing::TestPartResult &testPartResult)
     {
-        if(testPartResult.failed())
-            m_currentOutput << testPartResult.file_name() << ": "
-                            << testPartResult.line_number() << ": Failure" << std::endl
+        if (testPartResult.failed())
+            m_currentOutput << testPartResult.file_name() << ": " << testPartResult.line_number() << ": Failure"
+                            << std::endl
                             << testPartResult.summary() << std::endl;
     }
 
@@ -181,9 +173,9 @@ namespace testcoe
     {
         int testIndex = m_currentTestIndex[m_currentTestSuite]++;
 
-        m_suiteTestStatus[m_currentTestSuite][testIndex] = (testInfo.result()->Passed()) ? 
-                                                            TestStatus::Passed : TestStatus::Failed;
-        if(testInfo.result()->Passed())
+        m_suiteTestStatus[m_currentTestSuite][testIndex] =
+            (testInfo.result()->Passed()) ? TestStatus::Passed : TestStatus::Failed;
+        if (testInfo.result()->Passed())
             ++m_passedTests;
         else
         {
@@ -218,10 +210,10 @@ namespace testcoe
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - m_startTime);
 
         std::stringstream time_elapsed;
-        if(duration.count() >= 3600)
-            time_elapsed << (duration.count() / 3600) << " hours, " << ((duration.count() % 3600) / 60) 
+        if (duration.count() >= 3600)
+            time_elapsed << (duration.count() / 3600) << " hours, " << ((duration.count() % 3600) / 60)
                          << " minutes and " << (duration.count() % 60) << " seconds";
-        else if(duration.count() >= 60)
+        else if (duration.count() >= 60)
             time_elapsed << (duration.count() / 60) << " minutes and " << (duration.count() % 60) << " seconds";
         else
             time_elapsed << duration.count() << " seconds";
@@ -229,45 +221,42 @@ namespace testcoe
         printGrid();
 
         std::cout << std::endl
-                  << color::bold
-                  << "=========================================" << std::endl
+                  << color::bold << "=========================================" << std::endl
                   << "              Test  Summary              " << std::endl
                   << "=========================================" << color::reset << std::endl
                   << "Total Tests: " << m_totalTests << std::endl
                   << "Passed Tests: " << color::green << m_passedTests << color::reset << std::endl
-                  << "Failed Tests: " << (m_failedTests > 0 ? color::red : color::green)
-                  << m_failedTests << color::reset << std::endl
+                  << "Failed Tests: " << (m_failedTests > 0 ? color::red : color::green) << m_failedTests
+                  << color::reset << std::endl
                   << "Time Elapsed: " << time_elapsed.str() << std::endl;
 
-        if(m_failedTests > 0)
+        if (m_failedTests > 0)
         {
             std::cout << std::endl
-                      << color::bold << color::red
-                      << "=========================================" << std::endl
+                      << color::bold << color::red << "=========================================" << std::endl
                       << "              Failed  Tests              " << std::endl
                       << "=========================================" << color::reset << std::endl;
-            
-            for(const auto &suite : m_failedTestOutput)
+
+            for (const auto &suite : m_failedTestOutput)
             {
                 std::cout << color::bold << "Test Suite: " << suite.first << color::reset << std::endl;
-                for(const auto &test : suite.second)
+                for (const auto &test : suite.second)
                     std::cout << "  " << test << std::endl;
             }
 
             std::cout << std::endl
-                      << color::bold << color::red << m_failedTests << " TESTS FAILED. See details above." 
+                      << color::bold << color::red << m_failedTests << " TESTS FAILED. See details above."
                       << color::reset << std::endl;
         }
         else
         {
-            std::cout << std::endl
-                      << color::bold << color::green << "ALL TESTS PASSED!" << color::reset << std::endl;
+            std::cout << std::endl << color::bold << color::green << "ALL TESTS PASSED!" << color::reset << std::endl;
         }
     }
 
     void installGridListener()
     {
-        auto& listeners = ::testing::UnitTest::GetInstance()->listeners();
+        auto &listeners = ::testing::UnitTest::GetInstance()->listeners();
         auto defaultListener = listeners.Release(listeners.default_result_printer());
 
         listeners.Append(new GridTestListener(defaultListener));

@@ -1,24 +1,24 @@
 #include <gtest/gtest.h>
-#include <string>
 #include <cstdlib>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #ifdef _WIN32
-#include <io.h>
-#include <process.h>
-#include <windows.h>
-#include <limits.h>
-#ifndef MAX_PATH
-#define MAX_PATH 260
-#endif
+    #include <io.h>
+    #include <limits.h>
+    #include <process.h>
+    #include <windows.h>
+    #ifndef MAX_PATH
+        #define MAX_PATH 260
+    #endif
 #else
-#include <unistd.h>
-#include <sys/wait.h>
-#include <limits.h>
-#ifndef PATH_MAX
-#define PATH_MAX 4096
-#endif
+    #include <limits.h>
+    #include <sys/wait.h>
+    #include <unistd.h>
+    #ifndef PATH_MAX
+        #define PATH_MAX 4096
+    #endif
 #endif
 
 class ExampleTests : public ::testing::Test
@@ -60,8 +60,7 @@ protected:
         }
 #endif
 
-        if (exitCodeOut)
-            *exitCodeOut = exitCode;
+        if (exitCodeOut) *exitCodeOut = exitCode;
 
         return result;
     }
@@ -118,21 +117,19 @@ protected:
         std::vector<std::string> possiblePaths;
 
 #ifdef _WIN32
-        possiblePaths = {
-            // From tests/Debug to examples (typical MSVC structure)
-            testDir + "/../../examples/" + exampleName + "/Debug/" + exampleName + "_example.exe",
-            testDir + "/../../examples/" + exampleName + "/Release/" + exampleName + "_example.exe",
-            testDir + "/../../examples/" + exampleName + "/" + exampleName + "_example.exe",
-            // From build/tests/Debug to examples
-            testDir + "/../examples/" + exampleName + "/Debug/" + exampleName + "_example.exe",
-            testDir + "/../examples/" + exampleName + "/Release/" + exampleName + "_example.exe",
-            testDir + "/../examples/" + exampleName + "/" + exampleName + "_example.exe",
-            testDir + "/" + exampleName + "_example.exe"};
+        possiblePaths = {// From tests/Debug to examples (typical MSVC structure)
+                         testDir + "/../../examples/" + exampleName + "/Debug/" + exampleName + "_example.exe",
+                         testDir + "/../../examples/" + exampleName + "/Release/" + exampleName + "_example.exe",
+                         testDir + "/../../examples/" + exampleName + "/" + exampleName + "_example.exe",
+                         // From build/tests/Debug to examples
+                         testDir + "/../examples/" + exampleName + "/Debug/" + exampleName + "_example.exe",
+                         testDir + "/../examples/" + exampleName + "/Release/" + exampleName + "_example.exe",
+                         testDir + "/../examples/" + exampleName + "/" + exampleName + "_example.exe",
+                         testDir + "/" + exampleName + "_example.exe"};
 #else
-        possiblePaths = {
-            testDir + "/../examples/" + exampleName + "/" + exampleName + "_example",
-            testDir + "/../../examples/" + exampleName + "/" + exampleName + "_example",
-            testDir + "/" + exampleName + "_example"};
+        possiblePaths = {testDir + "/../examples/" + exampleName + "/" + exampleName + "_example",
+                         testDir + "/../../examples/" + exampleName + "/" + exampleName + "_example",
+                         testDir + "/" + exampleName + "_example"};
 #endif
 
         for (const auto &path : possiblePaths)
@@ -167,27 +164,20 @@ TEST_F(ExampleTests, BasicExampleRuns)
         std::cout << "Error in output: " << output << std::endl;
     }
 
-    EXPECT_TRUE(output.find("testcoe Basic Example") != std::string::npos)
-        << "Missing header in basic example output";
+    EXPECT_TRUE(output.find("testcoe Basic Example") != std::string::npos) << "Missing header in basic example output";
 
-    EXPECT_TRUE(output.find("Running") != std::string::npos)
-        << "Missing 'Running' text in output";
+    EXPECT_TRUE(output.find("Running") != std::string::npos) << "Missing 'Running' text in output";
 
-    EXPECT_TRUE(output.find("MathTest") != std::string::npos)
-        << "Missing MathTest suite in output";
+    EXPECT_TRUE(output.find("MathTest") != std::string::npos) << "Missing MathTest suite in output";
 
-    EXPECT_TRUE(output.find("StringTest") != std::string::npos)
-        << "Missing StringTest suite in output";
+    EXPECT_TRUE(output.find("StringTest") != std::string::npos) << "Missing StringTest suite in output";
 
-    EXPECT_TRUE(output.find("VectorTest") != std::string::npos)
-        << "Missing VectorTest suite in output";
+    EXPECT_TRUE(output.find("VectorTest") != std::string::npos) << "Missing VectorTest suite in output";
 
-    EXPECT_TRUE(output.find("P - Passed") != std::string::npos ||
-                output.find("Passed") != std::string::npos)
+    EXPECT_TRUE(output.find("P - Passed") != std::string::npos || output.find("Passed") != std::string::npos)
         << "Missing grid legend in output";
 
-    EXPECT_TRUE(output.find("Test  Summary") != std::string::npos ||
-                output.find("Summary") != std::string::npos)
+    EXPECT_TRUE(output.find("Test  Summary") != std::string::npos || output.find("Summary") != std::string::npos)
         << "Missing test summary in output";
 }
 
@@ -211,19 +201,18 @@ TEST_F(ExampleTests, BasicExampleNonInteractiveOutputHasNoDuplicateGridFrames)
         pos += gridFrameMarker.length();
     }
 
-    EXPECT_EQ(frameCount, 1u)
-        << "Non-interactive output should contain exactly one grid frame (the final summary), "
-        << "not one per test start/end event. Output:\n" << output;
+    EXPECT_EQ(frameCount, 1u) << "Non-interactive output should contain exactly one grid frame (the final summary), "
+                              << "not one per test start/end event. Output:\n"
+                              << output;
 
     // Loose bound. A duplicate-frame regression would blow well past this.
     std::size_t lineCount = 0;
     for (char c : output)
-        if (c == '\n')
-            ++lineCount;
+        if (c == '\n') ++lineCount;
 
-    EXPECT_LT(lineCount, 60u)
-        << "Non-interactive output is unexpectedly long (" << lineCount << " lines) - possible "
-        << "duplicate-frame regression. Output:\n" << output;
+    EXPECT_LT(lineCount, 60u) << "Non-interactive output is unexpectedly long (" << lineCount << " lines) - possible "
+                              << "duplicate-frame regression. Output:\n"
+                              << output;
 }
 
 TEST_F(ExampleTests, FilterExampleRuns)
@@ -233,20 +222,15 @@ TEST_F(ExampleTests, FilterExampleRuns)
     ASSERT_TRUE(executableExists(executable)) << "Filter example executable not found: " << executable;
 
     std::string helpOutput = runCommand(executable + " --help");
-    EXPECT_TRUE(helpOutput.find("Usage:") != std::string::npos)
-        << "Help option not working. Output: " << helpOutput;
+    EXPECT_TRUE(helpOutput.find("Usage:") != std::string::npos) << "Help option not working. Output: " << helpOutput;
 
     std::string allOutput = runCommand(executable + " --all");
-    EXPECT_TRUE(allOutput.find("Running all tests") != std::string::npos)
-        << "All tests option not working";
-    EXPECT_TRUE(allOutput.find("MathSuite") != std::string::npos)
-        << "Missing MathSuite in filter example";
+    EXPECT_TRUE(allOutput.find("Running all tests") != std::string::npos) << "All tests option not working";
+    EXPECT_TRUE(allOutput.find("MathSuite") != std::string::npos) << "Missing MathSuite in filter example";
 
     std::string suiteOutput = runCommand(executable + " --suite=MathSuite");
-    EXPECT_TRUE(suiteOutput.find("Running suite: MathSuite") != std::string::npos)
-        << "Suite filtering not working";
-    EXPECT_TRUE(suiteOutput.find("MathSuite") != std::string::npos)
-        << "MathSuite not run when filtered";
+    EXPECT_TRUE(suiteOutput.find("Running suite: MathSuite") != std::string::npos) << "Suite filtering not working";
+    EXPECT_TRUE(suiteOutput.find("MathSuite") != std::string::npos) << "MathSuite not run when filtered";
 
     std::string testOutput = runCommand(executable + " --test=MathSuite.Addition");
     EXPECT_TRUE(testOutput.find("Running test: MathSuite.Addition") != std::string::npos)
@@ -262,19 +246,15 @@ TEST_F(ExampleTests, CrashExampleRuns)
     // Without a --run-* flag only the basic tests run
     std::string output = runCommand(executable);
 
-    EXPECT_TRUE(output.find("testcoe Crash Handling Example") != std::string::npos)
-        << "Missing crash example header";
+    EXPECT_TRUE(output.find("testcoe Crash Handling Example") != std::string::npos) << "Missing crash example header";
 
-    EXPECT_TRUE(output.find("BasicTests") != std::string::npos)
-        << "Missing BasicTests in crash example";
+    EXPECT_TRUE(output.find("BasicTests") != std::string::npos) << "Missing BasicTests in crash example";
 
     bool hasSkipMessage = (output.find("Skipping") != std::string::npos) ||
-                          (output.find("SKIP") != std::string::npos) ||
-                          (output.find("skipped") != std::string::npos) ||
+                          (output.find("SKIP") != std::string::npos) || (output.find("skipped") != std::string::npos) ||
                           (output.find("disabled") != std::string::npos);
 
-    EXPECT_TRUE(hasSkipMessage)
-        << "Crash tests should be skipped by default. Output: " << output;
+    EXPECT_TRUE(hasSkipMessage) << "Crash tests should be skipped by default. Output: " << output;
 }
 
 // EXPECT_DEATH must pass cleanly under testcoe's handlers (see the internal_run_death_test guard in src/testcoe.cpp)
@@ -286,8 +266,8 @@ TEST_F(ExampleTests, CrashExampleDeathTestPassesCleanly)
     int exitCode = -1;
     std::string output = runCommand(executable + " --run-death-test", &exitCode);
 
-    EXPECT_EQ(exitCode, 0)
-        << "EXPECT_DEATH regression test should exit 0 (gtest reports it as passed). Output: " << output;
+    EXPECT_EQ(exitCode, 0) << "EXPECT_DEATH regression test should exit 0 (gtest reports it as passed). Output: "
+                           << output;
 
     EXPECT_TRUE(output.find("TEST TERMINATED BY") == std::string::npos)
         << "testcoe's own crash handler must not fire for a passing EXPECT_DEATH test. Output: " << output;
@@ -305,8 +285,7 @@ TEST_F(ExampleTests, CrashExampleHandlesCrashes)
     int exitCode = -1;
     std::string crashOutput = runCommand(executable + " --run-segfault", &exitCode);
 
-    EXPECT_NE(exitCode, 0)
-        << "Crash example should exit non-zero after a segfault. Output: " << crashOutput;
+    EXPECT_NE(exitCode, 0) << "Crash example should exit non-zero after a segfault. Output: " << crashOutput;
 
     EXPECT_TRUE(crashOutput.find("TEST TERMINATED BY") != std::string::npos)
         << "Missing crash termination message. Output: " << crashOutput;
@@ -330,10 +309,7 @@ TEST_F(ExampleTests, CrashExampleHandlesCrashes)
 
 TEST_F(ExampleTests, AllExamplesExist)
 {
-    std::vector<std::string> examples = {
-        "basic",
-        "crash",
-        "filter"};
+    std::vector<std::string> examples = {"basic", "crash", "filter"};
 
     for (const auto &example : examples)
     {

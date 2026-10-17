@@ -1,15 +1,15 @@
 #include <gtest/gtest.h>
-#include <vector>
-#include <string>
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
+#include <string>
+#include <vector>
 
 #if defined(__GNUC__) || defined(__clang__)
-#define TESTCOE_CRASH_NOINLINE [[gnu::noinline]]
+    #define TESTCOE_CRASH_NOINLINE [[gnu::noinline]]
 #elif defined(_MSC_VER)
-#define TESTCOE_CRASH_NOINLINE __declspec(noinline)
+    #define TESTCOE_CRASH_NOINLINE __declspec(noinline)
 #else
-#define TESTCOE_CRASH_NOINLINE
+    #define TESTCOE_CRASH_NOINLINE
 #endif
 
 class CrashTests : public ::testing::Test

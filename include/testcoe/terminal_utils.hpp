@@ -6,7 +6,7 @@
     #include <windows.h>
 #endif
 
-namespace testcoe 
+namespace testcoe
 {
     namespace terminal
     {

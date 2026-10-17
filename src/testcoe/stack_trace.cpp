@@ -1,6 +1,5 @@
 #include <testcoe/stack_trace.hpp>
 #include <testcoe_config.hpp>
-
 #include <cstddef>
 #include <cstdint>
 #include <ios>
@@ -45,16 +44,13 @@ namespace testcoe
             [[maybe_unused]] void print_frame(std::ostream &out, std::size_t index, const frame &f)
             {
                 out << "#" << index << " 0x" << std::hex << f.address << std::dec;
-                if (!f.function.empty())
-                    out << " in " << f.function;
+                if (!f.function.empty()) out << " in " << f.function;
                 if (!f.file.empty())
                 {
                     out << " at " << f.file;
-                    if (f.line != 0)
-                        out << ":" << f.line;
+                    if (f.line != 0) out << ":" << f.line;
                 }
-                if (!f.object.empty())
-                    out << " [" << f.object << "]";
+                if (!f.object.empty()) out << " [" << f.object << "]";
                 out << "\n";
             }
 
@@ -62,13 +58,10 @@ namespace testcoe
             void resolve_with_dladdr(frame &f)
             {
                 Dl_info info{};
-                if (!dladdr(reinterpret_cast<void *>(f.address), &info))
-                    return;
+                if (!dladdr(reinterpret_cast<void *>(f.address), &info)) return;
 
-                if (info.dli_fname)
-                    f.object = info.dli_fname;
-                if (!info.dli_sname)
-                    return;
+                if (info.dli_fname) f.object = info.dli_fname;
+                if (!info.dli_sname) return;
 
                 int status = 0;
                 char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
@@ -108,8 +101,7 @@ namespace testcoe
         bool print_source_snippet(std::ostream &out, const std::string &file, std::uint32_t line)
         {
             std::ifstream in(file);
-            if (!in)
-                return false;
+            if (!in) return false;
 
             const std::uint32_t first = line > 2 ? line - 2 : 1;
             const std::uint32_t last = line + 2;
@@ -117,11 +109,9 @@ namespace testcoe
             std::vector<std::string> lines;
             std::string text;
             for (std::uint32_t number = 1; number <= last && std::getline(in, text); ++number)
-                if (number >= first)
-                    lines.push_back(text);
+                if (number >= first) lines.push_back(text);
 
-            if (lines.empty())
-                return false;
+            if (lines.empty()) return false;
 
             const int width = static_cast<int>(std::to_string(first + lines.size() - 1).size());
             for (std::size_t i = 0; i < lines.size(); ++i)
@@ -167,10 +157,9 @@ namespace testcoe
                 f.function = entry.description();
                 f.file = entry.source_file();
                 f.line = static_cast<std::uint32_t>(entry.source_line());
-#ifdef TESTCOE_USE_DLADDR
-                if (f.function.empty())
-                    resolve_with_dladdr(f);
-#endif
+    #ifdef TESTCOE_USE_DLADDR
+                if (f.function.empty()) resolve_with_dladdr(f);
+    #endif
 
                 print_frame(out, i - first, f);
                 // without a match on the fault pc, handler frames look like user frames, so no snippet then.
@@ -222,9 +211,7 @@ namespace testcoe
 
 #else
 
-        void warm_up_stack_trace()
-        {
-        }
+        void warm_up_stack_trace() { }
 
     #if defined(_WIN32) && TESTCOE_STACKTRACE_BACKEND_NONE
 
@@ -255,14 +242,13 @@ namespace testcoe
                 f.address = reinterpret_cast<std::uintptr_t>(buffer[index]);
 
                 HMODULE module = nullptr;
-                if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                                       reinterpret_cast<LPCWSTR>(buffer[index]), &module) &&
+                if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, reinterpret_cast<LPCWSTR>(buffer[index]),
+                                       &module) &&
                     module)
                 {
                     char path[MAX_PATH];
                     DWORD len = GetModuleFileNameA(module, path, MAX_PATH);
-                    if (len > 0)
-                        f.object.assign(path, len);
+                    if (len > 0) f.object.assign(path, len);
                 }
 
                 print_frame(out, static_cast<std::size_t>(index - first), f);

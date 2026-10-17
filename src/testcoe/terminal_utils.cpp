@@ -21,8 +21,7 @@ namespace testcoe
             HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
             DWORD dwMode = 0;
 
-            if (hOut == INVALID_HANDLE_VALUE || !GetConsoleMode(hOut, &dwMode))
-                return false;
+            if (hOut == INVALID_HANDLE_VALUE || !GetConsoleMode(hOut, &dwMode)) return false;
 
             return (bool)SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #else
@@ -36,14 +35,14 @@ namespace testcoe
         void clear()
         {
 #ifdef _WIN32
-            if(!isAnsiEnabled())
+            if (!isAnsiEnabled())
             {
                 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
                 COORD coordScreen = {0, 0};
                 DWORD cCharsWritten;
                 CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-                if(hConsole == INVALID_HANDLE_VALUE || !GetConsoleScreenBufferInfo(hConsole, &csbi))
+                if (hConsole == INVALID_HANDLE_VALUE || !GetConsoleScreenBufferInfo(hConsole, &csbi))
                     return; // can't clear, leave the screen as it is
 
                 DWORD dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
