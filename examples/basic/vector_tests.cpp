@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-#include <vector>
 #include <algorithm>
 #include <chrono>
 #include <thread>
+#include <vector>
 
 void delayVectorTests(int milliseconds)
 {

@@ -1,12 +1,12 @@
 #include <testcoe/signal_handler.hpp>
 #include <testcoe/stack_trace.hpp>
+#include <gtest/gtest.h>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
-#include <gtest/gtest.h>
 
 #ifdef _WIN32
-#include <windows.h>
+    #include <windows.h>
 #endif
 #include <signal.h>
 
@@ -20,17 +20,13 @@ namespace testcoe
     {
         OutputDebugStringA("Windows exception handler called\n");
 
-        if (g_originalCoutBuf)
-            std::cout.rdbuf(g_originalCoutBuf);
-        if (g_originalCerrBuf)
-            std::cerr.rdbuf(g_originalCerrBuf);
+        if (g_originalCoutBuf) std::cout.rdbuf(g_originalCoutBuf);
+        if (g_originalCerrBuf) std::cerr.rdbuf(g_originalCerrBuf);
 
         std::cout.flush();
         std::cerr.flush();
 
-        std::cerr << std::endl
-                  << std::endl
-                  << "====== TEST TERMINATED BY EXCEPTION ======" << std::endl;
+        std::cerr << std::endl << std::endl << "====== TEST TERMINATED BY EXCEPTION ======" << std::endl;
 
         if (!pExceptionPtrs || !pExceptionPtrs->ExceptionRecord)
         {
@@ -45,27 +41,27 @@ namespace testcoe
 
         switch (exceptionCode)
         {
-        case EXCEPTION_ACCESS_VIOLATION:
-            std::cerr << " (ACCESS_VIOLATION: Segmentation fault - memory access violation)";
-            break;
-        case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-            std::cerr << " (ARRAY_BOUNDS_EXCEEDED: Array index out of bounds)";
-            break;
-        case EXCEPTION_INT_DIVIDE_BY_ZERO:
-            std::cerr << " (INT_DIVIDE_BY_ZERO: Integer division by zero)";
-            break;
-        case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-            std::cerr << " (FLT_DIVIDE_BY_ZERO: Floating point division by zero)";
-            break;
-        case EXCEPTION_STACK_OVERFLOW:
-            std::cerr << " (STACK_OVERFLOW: Stack overflow)";
-            break;
-        case EXCEPTION_ILLEGAL_INSTRUCTION:
-            std::cerr << " (ILLEGAL_INSTRUCTION: Illegal instruction)";
-            break;
-        default:
-            std::cerr << " (Unknown Windows exception)";
-            break;
+            case EXCEPTION_ACCESS_VIOLATION:
+                std::cerr << " (ACCESS_VIOLATION: Segmentation fault - memory access violation)";
+                break;
+            case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+                std::cerr << " (ARRAY_BOUNDS_EXCEEDED: Array index out of bounds)";
+                break;
+            case EXCEPTION_INT_DIVIDE_BY_ZERO:
+                std::cerr << " (INT_DIVIDE_BY_ZERO: Integer division by zero)";
+                break;
+            case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+                std::cerr << " (FLT_DIVIDE_BY_ZERO: Floating point division by zero)";
+                break;
+            case EXCEPTION_STACK_OVERFLOW:
+                std::cerr << " (STACK_OVERFLOW: Stack overflow)";
+                break;
+            case EXCEPTION_ILLEGAL_INSTRUCTION:
+                std::cerr << " (ILLEGAL_INSTRUCTION: Illegal instruction)";
+                break;
+            default:
+                std::cerr << " (Unknown Windows exception)";
+                break;
         }
 
         std::cerr << std::endl;
@@ -74,9 +70,7 @@ namespace testcoe
         const auto fault_pc = reinterpret_cast<std::uintptr_t>(pExceptionPtrs->ExceptionRecord->ExceptionAddress);
         internal::print_stack_trace(std::cerr, fault_pc);
 
-        std::cerr << std::endl
-                  << "===== END OF CRASH REPORT =====" << std::endl
-                  << std::endl;
+        std::cerr << std::endl << "===== END OF CRASH REPORT =====" << std::endl << std::endl;
 
         std::cerr.flush();
         std::cout.flush();
@@ -93,22 +87,22 @@ namespace testcoe
         {
             std::uintptr_t get_fault_pc([[maybe_unused]] void *context)
             {
-#if defined(__linux__) && defined(__x86_64__)
+    #if defined(__linux__) && defined(__x86_64__)
                 return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext.gregs[REG_RIP]);
-#elif defined(__linux__) && defined(__aarch64__)
+    #elif defined(__linux__) && defined(__aarch64__)
                 return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext.pc);
-#elif defined(__APPLE__) && defined(__aarch64__)
+    #elif defined(__APPLE__) && defined(__aarch64__)
                 const auto &state = static_cast<ucontext_t *>(context)->uc_mcontext->__ss;
-    #ifdef __darwin_arm_thread_state64_get_pc
+        #ifdef __darwin_arm_thread_state64_get_pc
                 return static_cast<std::uintptr_t>(__darwin_arm_thread_state64_get_pc(state));
-    #else
+        #else
                 return static_cast<std::uintptr_t>(state.__pc);
-    #endif
-#elif defined(__APPLE__) && defined(__x86_64__)
+        #endif
+    #elif defined(__APPLE__) && defined(__x86_64__)
                 return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext->__ss.__rip);
-#else
+    #else
                 return 0;
-#endif
+    #endif
             }
         } // namespace
     } // namespace internal
@@ -120,14 +114,10 @@ namespace testcoe
     void signalHandler(int signal, siginfo_t *, void *context)
 #endif
     {
-        if (g_originalCoutBuf)
-            std::cout.rdbuf(g_originalCoutBuf);
-        if (g_originalCerrBuf)
-            std::cerr.rdbuf(g_originalCerrBuf);
+        if (g_originalCoutBuf) std::cout.rdbuf(g_originalCoutBuf);
+        if (g_originalCerrBuf) std::cerr.rdbuf(g_originalCerrBuf);
 
-        std::cerr << std::endl
-                  << std::endl
-                  << "====== TEST TERMINATED BY SIGNAL ======" << std::endl;
+        std::cerr << std::endl << std::endl << "====== TEST TERMINATED BY SIGNAL ======" << std::endl;
         std::cerr << "Test crashed with signal " << signal;
 
         if (signal == SIGSEGV)
@@ -158,9 +148,7 @@ namespace testcoe
         internal::print_stack_trace(std::cerr, internal::get_fault_pc(context));
 #endif
 
-        std::cerr << std::endl
-                  << "===== END OF CRASH REPORT =====" << std::endl
-                  << std::endl;
+        std::cerr << std::endl << "===== END OF CRASH REPORT =====" << std::endl << std::endl;
 
         exit(128 + signal);
     }

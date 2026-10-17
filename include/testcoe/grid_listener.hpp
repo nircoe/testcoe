@@ -1,13 +1,13 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <chrono>
+#include <iomanip>
 #include <iostream>
+#include <map>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <map>
-#include <chrono>
-#include <sstream>
-#include <iomanip>
 
 namespace testcoe
 {
@@ -35,7 +35,7 @@ namespace testcoe
 
     class GridTestListener : public testing::TestEventListener
     {
-        testing::TestEventListener* m_originalListener;
+        testing::TestEventListener *m_originalListener;
         bool m_interactive; // true only on a real TTY, gates per-event grid redraws
 
         std::map<std::string, std::vector<TestStatus>> m_suiteTestStatus;
@@ -51,14 +51,14 @@ namespace testcoe
         int m_failedTests;
         std::chrono::time_point<std::chrono::high_resolution_clock> m_startTime;
 
-        std::streambuf* m_originalCoutBuf;
-        std::streambuf* m_originalCerrBuf;
+        std::streambuf *m_originalCoutBuf;
+        std::streambuf *m_originalCerrBuf;
         std::stringstream m_nullStream;
 
         void printGrid();
 
     public:
-        GridTestListener(testing::TestEventListener* listener);
+        GridTestListener(testing::TestEventListener *listener);
         virtual ~GridTestListener() override;
 
         virtual void OnTestProgramStart(const testing::UnitTest &unitTest) override;
