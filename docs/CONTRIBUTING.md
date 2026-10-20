@@ -59,11 +59,14 @@ The CI runs the following checks:
 1. Build the library
 2. Build all examples
 3. Run the integration tests (they run the example binaries)
+4. Check formatting with `clang-format` (Linux job)
 
 ## Making Changes
 
 ### Code Style
 - Keep lines under 120 characters
+- Formatting follows `.clang-format`. CI checks it, and `git clang-format` formats your changed lines
+  if you want to check before pushing
 
 ### Testing
 - The stack trace backend is chosen at configure time (look for `[testcoe] Stack trace backend:`

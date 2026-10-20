@@ -60,7 +60,7 @@ It consists of several modular components working together.
   - **Unix/Linux/macOS**: `sigaction` handlers (SIGSEGV, SIGABRT, etc.) that read the faulting PC from `ucontext`
   - **Windows**: all six signals go through `signal()`, which also covers `raise()`. On MSVC the fault address for
     SIGSEGV/SIGFPE/SIGILL comes from the CRT exception pointers. On MinGW hardware faults go through the SEH filter
-    (`windowsExceptionHandler`), which reads the address from the exception record
+    (`windows_exception_handler`), which reads the address from the exception record
 - Trace capture and printing is done by the internal stack_trace module (backend picked at
   configure time, see Stack traces below).
 
@@ -85,9 +85,9 @@ It consists of several modular components working together.
 - **File**: `src/testcoe/terminal_utils.cpp`, `include/testcoe/terminal_utils.hpp`
 - **Purpose**: Cross-platform terminal operations
 - **Key Functions**:
-  - `isAnsiEnabled()` - Detects ANSI color support
+  - `is_ansi_enabled()` - Detects ANSI color support
   - `clear()` - Clears terminal screen
-  - `isInteractive()` - Detects whether stdout is an interactive terminal (TTY) vs piped/redirected
+  - `is_interactive()` - Detects whether stdout is an interactive terminal (TTY) vs piped/redirected
 
 ## Data Flow
 
