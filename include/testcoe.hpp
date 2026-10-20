@@ -14,7 +14,7 @@ namespace testcoe
     void init();
     void init(int *argc, char **argv);
 
-    bool isInitialized();
+    bool is_initialized();
 
     int run();
     int run(const std::string &test_filter);

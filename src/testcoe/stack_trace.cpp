@@ -192,7 +192,7 @@ namespace testcoe
                 fault = resolve_address(fault_pc);
                 print_frame(out, index++, fault);
 
-                // print_stack_trace, signalHandler and the signal trampoline come first
+                // print_stack_trace, signal_handler and the signal trampoline come first
                 constexpr int HANDLER_FRAMES = 3;
                 first = HANDLER_FRAMES;
             }

@@ -24,57 +24,57 @@ namespace testcoe
         extern const std::string bold;
     } // namespace color
 
-    enum class TestStatus : char
+    enum class test_status : char
     {
-        None = '\0',
-        NotRun = '.',
-        Running = 'R',
-        Passed = 'P',
-        Failed = 'F'
+        none = '\0',
+        not_run = '.',
+        running = 'R',
+        passed = 'P',
+        failed = 'F'
     };
 
-    class GridTestListener : public testing::TestEventListener
+    class grid_test_listener : public testing::TestEventListener
     {
-        testing::TestEventListener *m_originalListener;
+        testing::TestEventListener *m_original_listener;
         bool m_interactive; // true only on a real TTY, gates per-event grid redraws
 
-        std::map<std::string, std::vector<TestStatus>> m_suiteTestStatus;
-        std::map<std::string, std::vector<std::string>> m_suiteTestNames;
-        std::map<std::string, std::vector<std::string>> m_failedTestOutput;
-        std::map<std::string, int> m_currentTestIndex;
-        std::string m_currentTestSuite;
-        std::string m_currentTest;
-        std::stringstream m_currentOutput;
-        int m_totalTests;
-        int m_completedTests;
-        int m_passedTests;
-        int m_failedTests;
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_startTime;
+        std::map<std::string, std::vector<test_status>> m_suite_test_status;
+        std::map<std::string, std::vector<std::string>> m_suite_test_names;
+        std::map<std::string, std::vector<std::string>> m_failed_test_output;
+        std::map<std::string, int> m_current_test_index;
+        std::string m_current_test_suite;
+        std::string m_current_test;
+        std::stringstream m_current_output;
+        int m_total_tests;
+        int m_completed_tests;
+        int m_passed_tests;
+        int m_failed_tests;
+        std::chrono::time_point<std::chrono::high_resolution_clock> m_start_time;
 
-        std::streambuf *m_originalCoutBuf;
-        std::streambuf *m_originalCerrBuf;
-        std::stringstream m_nullStream;
+        std::streambuf *m_original_cout_buf;
+        std::streambuf *m_original_cerr_buf;
+        std::stringstream m_null_stream;
 
-        void printGrid();
+        void print_grid();
 
     public:
-        GridTestListener(testing::TestEventListener *listener);
-        virtual ~GridTestListener() override;
+        grid_test_listener(testing::TestEventListener *listener);
+        virtual ~grid_test_listener() override;
 
-        virtual void OnTestProgramStart(const testing::UnitTest &unitTest) override;
-        virtual void OnTestIterationStart(const testing::UnitTest &unitTest, int iteration) override;
-        virtual void OnEnvironmentsSetUpStart(const testing::UnitTest &unitTest) override;
-        virtual void OnEnvironmentsSetUpEnd(const testing::UnitTest &unitTest) override;
-        virtual void OnTestSuiteStart(const testing::TestSuite &testSuite) override;
-        virtual void OnTestStart(const testing::TestInfo &testInfo) override;
-        virtual void OnTestPartResult(const testing::TestPartResult &testPartResult) override;
-        virtual void OnTestEnd(const testing::TestInfo &testInfo) override;
-        virtual void OnTestSuiteEnd(const testing::TestSuite &testSuite) override;
-        virtual void OnEnvironmentsTearDownStart(const testing::UnitTest &unitTest) override;
-        virtual void OnEnvironmentsTearDownEnd(const testing::UnitTest &unitTest) override;
-        virtual void OnTestIterationEnd(const testing::UnitTest &unitTest, int iteration) override;
-        virtual void OnTestProgramEnd(const testing::UnitTest &unitTest) override;
+        virtual void OnTestProgramStart(const testing::UnitTest &unit_test) override;
+        virtual void OnTestIterationStart(const testing::UnitTest &unit_test, int iteration) override;
+        virtual void OnEnvironmentsSetUpStart(const testing::UnitTest &unit_test) override;
+        virtual void OnEnvironmentsSetUpEnd(const testing::UnitTest &unit_test) override;
+        virtual void OnTestSuiteStart(const testing::TestSuite &test_suite) override;
+        virtual void OnTestStart(const testing::TestInfo &test_info) override;
+        virtual void OnTestPartResult(const testing::TestPartResult &test_part_result) override;
+        virtual void OnTestEnd(const testing::TestInfo &test_info) override;
+        virtual void OnTestSuiteEnd(const testing::TestSuite &test_suite) override;
+        virtual void OnEnvironmentsTearDownStart(const testing::UnitTest &unit_test) override;
+        virtual void OnEnvironmentsTearDownEnd(const testing::UnitTest &unit_test) override;
+        virtual void OnTestIterationEnd(const testing::UnitTest &unit_test, int iteration) override;
+        virtual void OnTestProgramEnd(const testing::UnitTest &unit_test) override;
     };
 
-    void installGridListener();
+    void install_grid_listener();
 } // namespace testcoe

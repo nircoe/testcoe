@@ -15,15 +15,15 @@ namespace testcoe
          * @brief Checks if the terminal handles ANSI escape codes (on Windows this also turns them on)
          * @return true if ANSI escape codes can be used
          */
-        bool isAnsiEnabled()
+        bool is_ansi_enabled()
         {
 #ifdef _WIN32
-            HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-            DWORD dwMode = 0;
+            HANDLE output_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+            DWORD mode = 0;
 
-            if (hOut == INVALID_HANDLE_VALUE || !GetConsoleMode(hOut, &dwMode)) return false;
+            if (output_handle == INVALID_HANDLE_VALUE || !GetConsoleMode(output_handle, &mode)) return false;
 
-            return (bool)SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+            return (bool)SetConsoleMode(output_handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #else
             return true;
 #endif
@@ -35,19 +35,19 @@ namespace testcoe
         void clear()
         {
 #ifdef _WIN32
-            if (!isAnsiEnabled())
+            if (!is_ansi_enabled())
             {
-                HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-                COORD coordScreen = {0, 0};
-                DWORD cCharsWritten;
+                HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+                COORD origin = {0, 0};
+                DWORD chars_written;
                 CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-                if (hConsole == INVALID_HANDLE_VALUE || !GetConsoleScreenBufferInfo(hConsole, &csbi))
+                if (console == INVALID_HANDLE_VALUE || !GetConsoleScreenBufferInfo(console, &csbi))
                     return; // can't clear, leave the screen as it is
 
-                DWORD dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
-                FillConsoleOutputCharacter(hConsole, ' ', dwConSize, coordScreen, &cCharsWritten);
-                SetConsoleCursorPosition(hConsole, coordScreen);
+                DWORD console_size = csbi.dwSize.X * csbi.dwSize.Y;
+                FillConsoleOutputCharacter(console, ' ', console_size, origin, &chars_written);
+                SetConsoleCursorPosition(console, origin);
                 return;
             }
 #endif
@@ -56,9 +56,9 @@ namespace testcoe
             std::cout << "\033[H\033[J";
         }
 
-        // Distinct from isAnsiEnabled(): TTY-ness, not ANSI capability. A pipe is never
+        // Distinct from is_ansi_enabled(): TTY-ness, not ANSI capability. A pipe is never
         // interactive regardless of color support.
-        bool isInteractive()
+        bool is_interactive()
         {
 #ifdef _WIN32
             return _isatty(_fileno(stdout)) != 0;

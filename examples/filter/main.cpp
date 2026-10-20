@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-void printHelp()
+void print_help()
 {
     std::cout << "Usage: ./filter_example [options]" << std::endl;
     std::cout << "Options:" << std::endl;
@@ -25,58 +25,58 @@ int main(int argc, char **argv)
 
     testcoe::init(&argc, argv);
 
-    bool showHelp = false;
-    bool runAll = true;
-    std::string suiteName;
-    std::string testName;
+    bool show_help = false;
+    bool run_all = true;
+    std::string suite_name;
+    std::string test_name;
 
     for (int i = 1; i < argc; ++i)
     {
         std::string arg = argv[i];
 
         if (arg == "--help")
-            showHelp = true;
+            show_help = true;
         else if (arg == "--all")
-            runAll = true;
+            run_all = true;
         else if (arg.substr(0, 8) == "--suite=")
         {
-            runAll = false;
-            suiteName = arg.substr(8);
+            run_all = false;
+            suite_name = arg.substr(8);
         }
         else if (arg.substr(0, 7) == "--test=")
         {
-            runAll = false;
-            std::string fullTest = arg.substr(7);
+            run_all = false;
+            std::string full_test = arg.substr(7);
 
-            size_t dotPos = fullTest.find('.');
-            if (dotPos != std::string::npos)
+            size_t dot_pos = full_test.find('.');
+            if (dot_pos != std::string::npos)
             {
-                suiteName = fullTest.substr(0, dotPos);
-                testName = fullTest.substr(dotPos + 1);
+                suite_name = full_test.substr(0, dot_pos);
+                test_name = full_test.substr(dot_pos + 1);
             }
         }
     }
 
-    if (showHelp)
+    if (show_help)
     {
-        printHelp();
+        print_help();
         return 0;
     }
 
-    if (runAll)
+    if (run_all)
     {
         std::cout << "Running all tests..." << std::endl;
         return testcoe::run();
     }
-    else if (!testName.empty())
+    else if (!test_name.empty())
     {
-        std::cout << "Running test: " << suiteName << "." << testName << std::endl;
-        return testcoe::run_test(suiteName, testName);
+        std::cout << "Running test: " << suite_name << "." << test_name << std::endl;
+        return testcoe::run_test(suite_name, test_name);
     }
-    else if (!suiteName.empty())
+    else if (!suite_name.empty())
     {
-        std::cout << "Running suite: " << suiteName << std::endl;
-        return testcoe::run_suite(suiteName);
+        std::cout << "Running suite: " << suite_name << std::endl;
+        return testcoe::run_suite(suite_name);
     }
 
     return testcoe::run();

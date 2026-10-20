@@ -13,8 +13,8 @@ namespace testcoe
             return;
         }
 
-        installGridListener();
-        installSignalHandlers();
+        install_grid_listener();
+        install_signal_handlers();
 
         s_initialized = true;
     }
@@ -39,7 +39,7 @@ namespace testcoe
         init_helper();
     }
 
-    bool isInitialized()
+    bool is_initialized()
     {
         return s_initialized;
     }
