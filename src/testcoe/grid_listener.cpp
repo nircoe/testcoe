@@ -2,6 +2,9 @@
 #include <testcoe/signal_handler.hpp>
 #include <testcoe/terminal_utils.hpp>
 #include <algorithm>
+#include <iomanip>
+#include <iostream>
+#include <stdexcept>
 
 namespace testcoe
 {
@@ -135,7 +138,6 @@ namespace testcoe
 
         if (m_suite_test_status.find(m_current_test_suite) == m_suite_test_status.end())
         {
-            // should not happen, just in case.
             m_suite_test_status[m_current_test_suite] = std::vector<test_status>();
             m_suite_test_names[m_current_test_suite] = std::vector<std::string>();
             m_current_test_index[m_current_test_suite] = 0;
@@ -145,7 +147,7 @@ namespace testcoe
     void grid_test_listener::OnTestStart(const testing::TestInfo &test_info)
     {
         if (m_current_test_suite.empty() || m_suite_test_status.find(m_current_test_suite) == m_suite_test_status.end())
-            return; // should not happen, just in case.
+            return;
 
         m_current_test = test_info.name();
         m_current_output.str("");

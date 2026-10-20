@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <cstddef>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -78,14 +79,14 @@ protected:
     {
 #ifdef _WIN32
         char path[MAX_PATH];
-        DWORD length = GetModuleFileNameA(NULL, path, MAX_PATH);
+        DWORD length = GetModuleFileNameA(nullptr, path, MAX_PATH);
         if (length == 0)
         {
             return ".";
         }
 
         std::string exe_path(path);
-        size_t last_slash = exe_path.find_last_of("\\/");
+        std::size_t last_slash = exe_path.find_last_of("\\/");
         if (last_slash != std::string::npos)
         {
             return exe_path.substr(0, last_slash);
@@ -101,7 +102,7 @@ protected:
 
         path[length] = '\0';
         std::string exe_path(path);
-        size_t last_slash = exe_path.find_last_of('/');
+        std::size_t last_slash = exe_path.find_last_of('/');
         if (last_slash != std::string::npos)
         {
             return exe_path.substr(0, last_slash);
@@ -117,11 +118,9 @@ protected:
         std::vector<std::string> possible_paths;
 
 #ifdef _WIN32
-        possible_paths = {// From tests/Debug to examples (typical MSVC structure)
-                          test_dir + "/../../examples/" + example_name + "/Debug/" + example_name + "_example.exe",
+        possible_paths = {test_dir + "/../../examples/" + example_name + "/Debug/" + example_name + "_example.exe",
                           test_dir + "/../../examples/" + example_name + "/Release/" + example_name + "_example.exe",
                           test_dir + "/../../examples/" + example_name + "/" + example_name + "_example.exe",
-                          // From build/tests/Debug to examples
                           test_dir + "/../examples/" + example_name + "/Debug/" + example_name + "_example.exe",
                           test_dir + "/../examples/" + example_name + "/Release/" + example_name + "_example.exe",
                           test_dir + "/../examples/" + example_name + "/" + example_name + "_example.exe",
@@ -320,7 +319,6 @@ TEST_F(ExampleTests, AllExamplesExist)
 
 TEST_F(ExampleTests, ExampleExitCodes)
 {
-    // Basic example should not crash (exit code < 128)
     std::string basic_cmd = get_executable_path("basic");
 
 #ifdef _WIN32

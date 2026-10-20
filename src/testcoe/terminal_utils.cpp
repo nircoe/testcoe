@@ -2,19 +2,17 @@
 
 #ifdef _WIN32
     #include <io.h>
+    #include <windows.h>
 #else
     #include <unistd.h>
 #endif
 #include <cstdio>
+#include <iostream>
 
 namespace testcoe
 {
     namespace terminal
     {
-        /**
-         * @brief Checks if the terminal handles ANSI escape codes (on Windows this also turns them on)
-         * @return true if ANSI escape codes can be used
-         */
         bool is_ansi_enabled()
         {
 #ifdef _WIN32
@@ -23,15 +21,12 @@ namespace testcoe
 
             if (output_handle == INVALID_HANDLE_VALUE || !GetConsoleMode(output_handle, &mode)) return false;
 
-            return (bool)SetConsoleMode(output_handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+            return static_cast<bool>(SetConsoleMode(output_handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
 #else
             return true;
 #endif
         }
 
-        /**
-         * @brief Clears the terminal screen
-         */
         void clear()
         {
 #ifdef _WIN32

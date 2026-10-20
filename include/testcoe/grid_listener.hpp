@@ -2,19 +2,14 @@
 
 #include <gtest/gtest.h>
 #include <chrono>
-#include <iomanip>
-#include <iostream>
 #include <map>
 #include <sstream>
+#include <streambuf>
 #include <string>
 #include <vector>
 
 namespace testcoe
 {
-    /**
-     * @namespace testcoe::color
-     * @brief ANSI color and style codes for terminal output
-     */
     namespace color
     {
         extern const std::string reset;
@@ -58,22 +53,22 @@ namespace testcoe
         void print_grid();
 
     public:
-        grid_test_listener(testing::TestEventListener *listener);
-        virtual ~grid_test_listener() override;
+        explicit grid_test_listener(testing::TestEventListener *listener);
+        ~grid_test_listener() override;
 
-        virtual void OnTestProgramStart(const testing::UnitTest &unit_test) override;
-        virtual void OnTestIterationStart(const testing::UnitTest &unit_test, int iteration) override;
-        virtual void OnEnvironmentsSetUpStart(const testing::UnitTest &unit_test) override;
-        virtual void OnEnvironmentsSetUpEnd(const testing::UnitTest &unit_test) override;
-        virtual void OnTestSuiteStart(const testing::TestSuite &test_suite) override;
-        virtual void OnTestStart(const testing::TestInfo &test_info) override;
-        virtual void OnTestPartResult(const testing::TestPartResult &test_part_result) override;
-        virtual void OnTestEnd(const testing::TestInfo &test_info) override;
-        virtual void OnTestSuiteEnd(const testing::TestSuite &test_suite) override;
-        virtual void OnEnvironmentsTearDownStart(const testing::UnitTest &unit_test) override;
-        virtual void OnEnvironmentsTearDownEnd(const testing::UnitTest &unit_test) override;
-        virtual void OnTestIterationEnd(const testing::UnitTest &unit_test, int iteration) override;
-        virtual void OnTestProgramEnd(const testing::UnitTest &unit_test) override;
+        void OnTestProgramStart(const testing::UnitTest &unit_test) override;
+        void OnTestIterationStart(const testing::UnitTest &unit_test, int iteration) override;
+        void OnEnvironmentsSetUpStart(const testing::UnitTest &unit_test) override;
+        void OnEnvironmentsSetUpEnd(const testing::UnitTest &unit_test) override;
+        void OnTestSuiteStart(const testing::TestSuite &test_suite) override;
+        void OnTestStart(const testing::TestInfo &test_info) override;
+        void OnTestPartResult(const testing::TestPartResult &test_part_result) override;
+        void OnTestEnd(const testing::TestInfo &test_info) override;
+        void OnTestSuiteEnd(const testing::TestSuite &test_suite) override;
+        void OnEnvironmentsTearDownStart(const testing::UnitTest &unit_test) override;
+        void OnEnvironmentsTearDownEnd(const testing::UnitTest &unit_test) override;
+        void OnTestIterationEnd(const testing::UnitTest &unit_test, int iteration) override;
+        void OnTestProgramEnd(const testing::UnitTest &unit_test) override;
     };
 
     void install_grid_listener();

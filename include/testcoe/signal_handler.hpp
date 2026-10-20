@@ -1,8 +1,7 @@
 #pragma once
 
 #include <csignal>
-#include <iostream>
-#include <string>
+#include <streambuf>
 
 namespace testcoe
 {

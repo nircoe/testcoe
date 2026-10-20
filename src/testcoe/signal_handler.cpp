@@ -75,7 +75,6 @@ namespace testcoe
         std::cerr.flush();
         std::cout.flush();
 
-        // give the console time to show the output
         Sleep(500);
 
         ExitProcess(1);

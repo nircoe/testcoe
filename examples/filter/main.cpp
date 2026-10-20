@@ -1,4 +1,5 @@
 #include <testcoe.hpp>
+#include <cstddef>
 #include <iostream>
 #include <string>
 
@@ -48,7 +49,7 @@ int main(int argc, char **argv)
             run_all = false;
             std::string full_test = arg.substr(7);
 
-            size_t dot_pos = full_test.find('.');
+            std::size_t dot_pos = full_test.find('.');
             if (dot_pos != std::string::npos)
             {
                 suite_name = full_test.substr(0, dot_pos);

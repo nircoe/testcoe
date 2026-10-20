@@ -1,13 +1,9 @@
-/**
- * @namespace testcoe
- * @brief Grid view of test progress and crash stack traces for Google Test
- */
-
 #pragma once
 
 #include <testcoe/grid_listener.hpp>
 #include <testcoe/signal_handler.hpp>
 #include <testcoe/terminal_utils.hpp>
+#include <string>
 
 namespace testcoe
 {

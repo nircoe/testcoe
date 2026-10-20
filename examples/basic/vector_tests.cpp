@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <chrono>
+#include <cstddef>
 #include <thread>
 #include <vector>
 
@@ -39,7 +40,7 @@ TEST(VectorTest, Sort)
     std::vector<int> v = {5, 3, 1, 4, 2};
     std::sort(v.begin(), v.end());
 
-    for (size_t i = 1; i < v.size(); ++i)
+    for (std::size_t i = 1; i < v.size(); ++i)
     {
         EXPECT_LE(v[i - 1], v[i]) << "Vector not sorted at index " << i;
     }
