@@ -36,6 +36,7 @@ When fetching testcoe from another CMake project, set the same options with
 
 ```
 testcoe/
+├── .clang-format         # Formatting rules
 ├── cmake/                # CMake helpers
 ├── docs/                 # Architecture, contributing and roadmap
 ├── include/testcoe/      # Public headers

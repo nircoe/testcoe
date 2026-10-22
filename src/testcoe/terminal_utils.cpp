@@ -13,6 +13,7 @@ namespace testcoe
 {
     namespace terminal
     {
+        // On Windows this also turns ANSI processing on for the console.
         bool is_ansi_enabled()
         {
 #ifdef _WIN32
