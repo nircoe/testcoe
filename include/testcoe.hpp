@@ -1,20 +1,16 @@
-/**
- * @namespace testcoe
- * @brief Grid view of test progress and crash stack traces for Google Test
- */
-
 #pragma once
 
 #include <testcoe/grid_listener.hpp>
 #include <testcoe/signal_handler.hpp>
 #include <testcoe/terminal_utils.hpp>
+#include <string>
 
 namespace testcoe
 {
     void init();
     void init(int *argc, char **argv);
 
-    bool isInitialized();
+    bool is_initialized();
 
     int run();
     int run(const std::string &test_filter);

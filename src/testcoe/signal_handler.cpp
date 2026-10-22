@@ -1,87 +1,81 @@
 #include <testcoe/signal_handler.hpp>
 #include <testcoe/stack_trace.hpp>
+#include <gtest/gtest.h>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
-#include <gtest/gtest.h>
 
 #ifdef _WIN32
-#include <windows.h>
+    #include <windows.h>
 #endif
 #include <signal.h>
 
 namespace testcoe
 {
-    std::streambuf *g_originalCoutBuf = nullptr;
-    std::streambuf *g_originalCerrBuf = nullptr;
+    std::streambuf *g_original_cout_buf = nullptr;
+    std::streambuf *g_original_cerr_buf = nullptr;
 
 #ifdef _WIN32
-    LONG WINAPI windowsExceptionHandler(EXCEPTION_POINTERS *pExceptionPtrs)
+    LONG WINAPI windows_exception_handler(EXCEPTION_POINTERS *exception_pointers)
     {
         OutputDebugStringA("Windows exception handler called\n");
 
-        if (g_originalCoutBuf)
-            std::cout.rdbuf(g_originalCoutBuf);
-        if (g_originalCerrBuf)
-            std::cerr.rdbuf(g_originalCerrBuf);
+        if (g_original_cout_buf) std::cout.rdbuf(g_original_cout_buf);
+        if (g_original_cerr_buf) std::cerr.rdbuf(g_original_cerr_buf);
 
         std::cout.flush();
         std::cerr.flush();
 
-        std::cerr << std::endl
-                  << std::endl
-                  << "====== TEST TERMINATED BY EXCEPTION ======" << std::endl;
+        std::cerr << std::endl << std::endl << "====== TEST TERMINATED BY EXCEPTION ======" << std::endl;
 
-        if (!pExceptionPtrs || !pExceptionPtrs->ExceptionRecord)
+        if (!exception_pointers || !exception_pointers->ExceptionRecord)
         {
             std::cerr << "Invalid exception pointer!" << std::endl;
             std::cerr.flush();
             ExitProcess(1);
         }
 
-        DWORD exceptionCode = pExceptionPtrs->ExceptionRecord->ExceptionCode;
+        DWORD exception_code = exception_pointers->ExceptionRecord->ExceptionCode;
 
-        std::cerr << "Windows Exception Code: 0x" << std::hex << exceptionCode << std::dec;
+        std::cerr << "Windows Exception Code: 0x" << std::hex << exception_code << std::dec;
 
-        switch (exceptionCode)
+        switch (exception_code)
         {
-        case EXCEPTION_ACCESS_VIOLATION:
-            std::cerr << " (ACCESS_VIOLATION: Segmentation fault - memory access violation)";
-            break;
-        case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-            std::cerr << " (ARRAY_BOUNDS_EXCEEDED: Array index out of bounds)";
-            break;
-        case EXCEPTION_INT_DIVIDE_BY_ZERO:
-            std::cerr << " (INT_DIVIDE_BY_ZERO: Integer division by zero)";
-            break;
-        case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-            std::cerr << " (FLT_DIVIDE_BY_ZERO: Floating point division by zero)";
-            break;
-        case EXCEPTION_STACK_OVERFLOW:
-            std::cerr << " (STACK_OVERFLOW: Stack overflow)";
-            break;
-        case EXCEPTION_ILLEGAL_INSTRUCTION:
-            std::cerr << " (ILLEGAL_INSTRUCTION: Illegal instruction)";
-            break;
-        default:
-            std::cerr << " (Unknown Windows exception)";
-            break;
+            case EXCEPTION_ACCESS_VIOLATION:
+                std::cerr << " (ACCESS_VIOLATION: Segmentation fault - memory access violation)";
+                break;
+            case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+                std::cerr << " (ARRAY_BOUNDS_EXCEEDED: Array index out of bounds)";
+                break;
+            case EXCEPTION_INT_DIVIDE_BY_ZERO:
+                std::cerr << " (INT_DIVIDE_BY_ZERO: Integer division by zero)";
+                break;
+            case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+                std::cerr << " (FLT_DIVIDE_BY_ZERO: Floating point division by zero)";
+                break;
+            case EXCEPTION_STACK_OVERFLOW:
+                std::cerr << " (STACK_OVERFLOW: Stack overflow)";
+                break;
+            case EXCEPTION_ILLEGAL_INSTRUCTION:
+                std::cerr << " (ILLEGAL_INSTRUCTION: Illegal instruction)";
+                break;
+            default:
+                std::cerr << " (Unknown Windows exception)";
+                break;
         }
 
         std::cerr << std::endl;
         std::cerr.flush();
 
-        const auto fault_pc = reinterpret_cast<std::uintptr_t>(pExceptionPtrs->ExceptionRecord->ExceptionAddress);
+        const auto fault_pc = reinterpret_cast<std::uintptr_t>(exception_pointers->ExceptionRecord->ExceptionAddress);
         internal::print_stack_trace(std::cerr, fault_pc);
 
-        std::cerr << std::endl
-                  << "===== END OF CRASH REPORT =====" << std::endl
-                  << std::endl;
+        std::cerr << std::endl << "===== END OF CRASH REPORT =====" << std::endl << std::endl;
 
         std::cerr.flush();
         std::cout.flush();
 
-        // give the console time to show the output
+        // Give the console time to show the output.
         Sleep(500);
 
         ExitProcess(1);
@@ -93,41 +87,37 @@ namespace testcoe
         {
             std::uintptr_t get_fault_pc([[maybe_unused]] void *context)
             {
-#if defined(__linux__) && defined(__x86_64__)
+    #if defined(__linux__) && defined(__x86_64__)
                 return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext.gregs[REG_RIP]);
-#elif defined(__linux__) && defined(__aarch64__)
+    #elif defined(__linux__) && defined(__aarch64__)
                 return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext.pc);
-#elif defined(__APPLE__) && defined(__aarch64__)
+    #elif defined(__APPLE__) && defined(__aarch64__)
                 const auto &state = static_cast<ucontext_t *>(context)->uc_mcontext->__ss;
-    #ifdef __darwin_arm_thread_state64_get_pc
+        #ifdef __darwin_arm_thread_state64_get_pc
                 return static_cast<std::uintptr_t>(__darwin_arm_thread_state64_get_pc(state));
-    #else
+        #else
                 return static_cast<std::uintptr_t>(state.__pc);
-    #endif
-#elif defined(__APPLE__) && defined(__x86_64__)
+        #endif
+    #elif defined(__APPLE__) && defined(__x86_64__)
                 return static_cast<std::uintptr_t>(static_cast<ucontext_t *>(context)->uc_mcontext->__ss.__rip);
-#else
+    #else
                 return 0;
-#endif
+    #endif
             }
         } // namespace
     } // namespace internal
 #endif
 
 #ifdef _WIN32
-    void signalHandler(int signal)
+    void signal_handler(int signal)
 #else
-    void signalHandler(int signal, siginfo_t *, void *context)
+    void signal_handler(int signal, siginfo_t *, void *context)
 #endif
     {
-        if (g_originalCoutBuf)
-            std::cout.rdbuf(g_originalCoutBuf);
-        if (g_originalCerrBuf)
-            std::cerr.rdbuf(g_originalCerrBuf);
+        if (g_original_cout_buf) std::cout.rdbuf(g_original_cout_buf);
+        if (g_original_cerr_buf) std::cerr.rdbuf(g_original_cerr_buf);
 
-        std::cerr << std::endl
-                  << std::endl
-                  << "====== TEST TERMINATED BY SIGNAL ======" << std::endl;
+        std::cerr << std::endl << std::endl << "====== TEST TERMINATED BY SIGNAL ======" << std::endl;
         std::cerr << "Test crashed with signal " << signal;
 
         if (signal == SIGSEGV)
@@ -158,23 +148,21 @@ namespace testcoe
         internal::print_stack_trace(std::cerr, internal::get_fault_pc(context));
 #endif
 
-        std::cerr << std::endl
-                  << "===== END OF CRASH REPORT =====" << std::endl
-                  << std::endl;
+        std::cerr << std::endl << "===== END OF CRASH REPORT =====" << std::endl << std::endl;
 
         exit(128 + signal);
     }
 
-    void setupStackTraceEnhancements()
+    void setup_stack_trace_enhancements()
     {
 #ifdef _WIN32
-        SetUnhandledExceptionFilter(windowsExceptionHandler);
+        SetUnhandledExceptionFilter(windows_exception_handler);
 
         std::cout << "Windows stack trace enhancements enabled." << std::endl;
 #endif
     }
 
-    void installSignalHandlers()
+    void install_signal_handlers()
     {
         std::cout << "Installing signal handlers..." << std::endl;
 
@@ -184,21 +172,21 @@ namespace testcoe
         internal::warm_up_stack_trace();
 
 #ifdef _WIN32
-        signal(SIGABRT, signalHandler);
-        signal(SIGTERM, signalHandler);
-        signal(SIGINT, signalHandler);
+        signal(SIGABRT, signal_handler);
+        signal(SIGTERM, signal_handler);
+        signal(SIGINT, signal_handler);
 
     #ifdef _MSC_VER
-        // The CRT catches hardware faults before windowsExceptionHandler on MSVC, so these need
-        // signal(). signalHandler reads the fault address from the CRT exception pointers. On
+        // The CRT catches hardware faults before windows_exception_handler on MSVC, so these need
+        // signal(). signal_handler reads the fault address from the CRT exception pointers. On
         // MinGW signal() would catch them too but without the address, so they are left out.
-        signal(SIGSEGV, signalHandler);
-        signal(SIGFPE, signalHandler);
-        signal(SIGILL, signalHandler);
+        signal(SIGSEGV, signal_handler);
+        signal(SIGFPE, signal_handler);
+        signal(SIGILL, signal_handler);
     #endif
 #else
         struct sigaction action{};
-        action.sa_sigaction = signalHandler;
+        action.sa_sigaction = signal_handler;
         action.sa_flags = SA_SIGINFO;
         sigemptyset(&action.sa_mask);
 
@@ -206,7 +194,7 @@ namespace testcoe
             sigaction(sig, &action, nullptr);
 #endif
 
-        setupStackTraceEnhancements();
+        setup_stack_trace_enhancements();
 
         std::cout << "Signal handlers installed successfully." << std::endl;
     }

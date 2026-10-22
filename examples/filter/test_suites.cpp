@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <vector>
-#include <string>
 #include <iostream>
+#include <string>
+#include <vector>
 
 //==============================================================================
 // MathSuite (basic math operations)

@@ -89,7 +89,7 @@ testcoe::init(&argc, argv);
 testcoe::init();
 
 // Check if testcoe was initialized
-testcoe::isInitialized();
+testcoe::is_initialized();
 
 // Run all tests
 testcoe::run();

@@ -1,19 +1,18 @@
 #pragma once
 
 #include <csignal>
-#include <iostream>
-#include <string>
+#include <streambuf>
 
 namespace testcoe
 {
-    extern std::streambuf *g_originalCoutBuf;
-    extern std::streambuf *g_originalCerrBuf;
+    extern std::streambuf *g_original_cout_buf;
+    extern std::streambuf *g_original_cerr_buf;
 
 #ifdef _WIN32
-    void signalHandler(int signal);
+    void signal_handler(int signal);
 #else
-    void signalHandler(int signal, siginfo_t *info, void *context);
+    void signal_handler(int signal, siginfo_t *info, void *context);
 #endif
-    void installSignalHandlers();
-    void setupStackTraceEnhancements();
+    void install_signal_handlers();
+    void setup_stack_trace_enhancements();
 } // namespace testcoe

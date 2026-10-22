@@ -1,15 +1,15 @@
 #include <gtest/gtest.h>
-#include <vector>
-#include <string>
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
+#include <string>
+#include <vector>
 
 #if defined(__GNUC__) || defined(__clang__)
-#define TESTCOE_CRASH_NOINLINE [[gnu::noinline]]
+    #define TESTCOE_CRASH_NOINLINE [[gnu::noinline]]
 #elif defined(_MSC_VER)
-#define TESTCOE_CRASH_NOINLINE __declspec(noinline)
+    #define TESTCOE_CRASH_NOINLINE __declspec(noinline)
 #else
-#define TESTCOE_CRASH_NOINLINE
+    #define TESTCOE_CRASH_NOINLINE
 #endif
 
 class CrashTests : public ::testing::Test
@@ -21,18 +21,18 @@ class CrashTests : public ::testing::Test
 //==============================================================================
 
 // Named, non-inlined, externally-linked so the crash backend can resolve a symbol for it
-TESTCOE_CRASH_NOINLINE void testcoeCrashExampleNullWrite()
+TESTCOE_CRASH_NOINLINE void testcoe_crash_example_null_write()
 {
     // Both the pointer and the write are volatile, or GCC -O2 sees a known null write and drops the call
-    volatile int *volatile nullPtr = nullptr;
-    *nullPtr = 42; // testcoe-crash-site
+    volatile int *volatile null_ptr = nullptr;
+    *null_ptr = 42; // testcoe-crash-site
 }
 
 TEST(CrashTests, SegmentationFault)
 {
     std::cout << "This test will cause a segmentation fault by dereferencing a null pointer." << std::endl;
 
-    testcoeCrashExampleNullWrite();
+    testcoe_crash_example_null_write();
 
     FAIL() << "Test did not crash as expected";
 }
@@ -79,7 +79,7 @@ TEST(CrashTests, AbortDeathTest)
 // Stack Overflow Test
 //==============================================================================
 
-void infiniteRecursion(int depth)
+void infinite_recursion(int depth)
 {
     char buffer[1024] = {0};
 
@@ -88,7 +88,7 @@ void infiniteRecursion(int depth)
         std::cout << "Recursion depth: " << depth << std::endl;
     }
 
-    infiniteRecursion(depth + 1);
+    infinite_recursion(depth + 1);
 }
 
 TEST(CrashTests, StackOverflow)
@@ -97,7 +97,7 @@ TEST(CrashTests, StackOverflow)
 
     GTEST_SKIP() << "Skipping intentional crash test";
 
-    infiniteRecursion(1);
+    infinite_recursion(1);
 
     FAIL() << "Test did not crash as expected";
 }
@@ -131,14 +131,14 @@ TEST(CrashTests, StreamRedirection)
     GTEST_SKIP() << "Skipping intentional crash test";
 
     std::stringstream buffer;
-    std::streambuf *oldBuf = std::cout.rdbuf(buffer.rdbuf());
+    std::streambuf *old_buf = std::cout.rdbuf(buffer.rdbuf());
 
     std::cout << "This should be captured in the buffer" << std::endl;
 
-    int *nullPtr = nullptr;
-    *nullPtr = 42;
+    int *null_ptr = nullptr;
+    *null_ptr = 42;
 
-    std::cout.rdbuf(oldBuf);
+    std::cout.rdbuf(old_buf);
     std::cout << "Buffer contained: " << buffer.str() << std::endl;
     FAIL() << "Test did not crash as expected";
 }
